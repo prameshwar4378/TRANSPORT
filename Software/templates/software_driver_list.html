@@ -1,0 +1,271 @@
+{% extends "software_base.html" %}
+{% block title %}Driver List{% endblock title %}
+{% load crispy_forms_tags %}
+{% block content %}
+<style>  
+</style>
+<main id="main" class="main">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="pagetitle">
+                <h1>Driver</h1>
+                <nav>
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item"><a href="#">Driver List </a></li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="container" style="max-width:97%;">
+                <div class="text-lg-end text-start">
+                    <!-- Use text-lg-end for right alignment in large screens -->
+                    <a href="#" class="btn btn-primary" data-toggle="modal"
+                        data-target="#model_create"><i class="mdi mdi-filter"></i> Add New Driver</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <section class="section dashboard">
+<hr>
+   
+        <div class="container">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-sm-12"> <br><br>
+                    
+                    <div class="row">
+                        <div class="container" style=" overflow:scroll;">
+                            <table id="driver_table" class="table table-striped table-bordered" style="width:100%; min-width: max-content;">
+                                <thead>
+                                    <tr style="background-color: rgb(56, 79, 90);">
+                                        <th scope="col" class="text-center text-white">Sr. No</th>
+                                        <th scope="col" class="text-center text-white">Profile Photo</th>
+                                        <th scope="col" class="text-center text-white">Driver Name</th>
+                                        <th scope="col" class="text-center text-white">Mobile</th>
+                                        <th scope="col" class="text-center text-white">Licence</th>
+                                        <th scope="col" class="text-center text-white">Adhar Card</th>
+                                        <th scope="col" class="text-center text-white">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if rec %}
+                                    {% for r in rec %}
+                                    <tr>
+                                        <td class="text-center">{{ forloop.counter }}</td>
+                                        
+                                        <td class="text-center">
+                                            {% if r.profile_photo %}
+                                            <img src="/media/{{ r.profile_photo }}" alt="Profile Photo" style="height:50px; width:auto;">
+                                            {% else %}
+                                            ----
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-left">{{ r.driver_name|default_if_none:"----" }}</td>
+                                        <td class="text-left">{{ r.mobile|default_if_none:"----" }}</td>
+                                        <td class="text-left">
+                                            {% if r.licence %}
+                                            <a href="/media/{{ r.licence }}" download>Download</a>
+                                            {% else %}
+                                            ----
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-left">
+                                            {% if r.adhar_card %}
+                                            <a href="/media/{{ r.adhar_card }}" download>Download</a>
+                                            {% else %}
+                                            ----
+                                            {% endif %}
+                                        </td> 
+                                        <td>
+                                            <center>
+                                                <a href="javascript:void(0);" data-url="{% url 'software_update_driver' r.id %}" class="btn btn-warning px-3" onclick="mini_window_2(this)">Update</a>
+                                                <a href="{% url 'software_delete_driver' r.id %}" class="btn btn-danger px-2 py-2" onclick="confirmDelete(this); return false;">Delete</a>
+                                            </center>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="10" class="text-center">No Drivers Found</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                            
+                        </div>
+
+                    </div>
+                    
+
+                </div>
+            </div>
+        </div>
+</main><!-- End #main -->
+ 
+
+<div class="modal fade" id="model_create" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 800px;">
+    <div class="modal-content">
+        <div class="modal-header" style="background:#9c4b2e;">
+            <h4 class="modal-title text-white" id="exampleModalLongTitle">Create New Driver</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body text-left">
+            <!-- Alert box for errors -->
+            <div class="alert alert-danger d-none" id="createDriverError"></div>
+
+            <!-- Form for technician creation -->
+            <form id="createDriverForm" method="POST" enctype="multipart/form-data" action="{% url "software_create_driver" %}">
+                {% csrf_token %}
+                <div class="row">  
+                    <div class="col-sm-6">
+                        {{ form.driver_name|as_crispy_field }}
+                    </div>
+                    <div class="col-sm-6">
+                        {{ form.mobile|as_crispy_field }}
+                    </div>
+                    <div class="col-sm-6">
+                        {{ form.alternate_mobile|as_crispy_field }}
+                    </div>
+                    <div class="col-sm-6">
+                        {{ form.licence|as_crispy_field }}
+                    </div>
+                    <div class="col-sm-6">
+                        {{ form.adhar_card|as_crispy_field }}
+                    </div> 
+                    <div class="col-sm-6">
+                        {{ form.document1|as_crispy_field }}
+                    </div>
+                    <div class="col-sm-6">
+                        {{ form.document2|as_crispy_field }}
+                    </div> 
+                    <div class="col-sm-6">
+                        {{ form.profile_photo|as_crispy_field }}
+                    </div>
+                </div>
+                
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary bgcolor px-3" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+
+<!-- Modal for Delete Confirmation -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+          <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete the <strong id="delete_info"></strong>?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <a id="deleteButton" href="#" class="btn btn-danger">Delete</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+      function confirmDelete(button) {
+          var info = button.closest('tr').querySelector('td:nth-child(2)').textContent.trim();
+          var deleteUrl = button.getAttribute('href');  // The delete URL
+          document.getElementById('delete_info').textContent = info;
+          document.getElementById('deleteButton').setAttribute('href', deleteUrl);
+          new bootstrap.Modal(document.getElementById('deleteModal')).show();
+      }
+  </script>
+
+  
+<script>
+    $(document).ready(function () {
+        $('#driver_table').DataTable({
+            "scrollX": true, // Enable horizontal scrolling
+            "pageLength": 50 // Set the default number of entries to display
+        });
+    });
+</script>
+
+
+<script>
+    $(document).ready(function () {
+         
+        $("#createDriverForm").on("submit", function (e) {
+            e.preventDefault(); // Prevent form from refreshing the page
+            let formData = new FormData(this);
+            $.ajax({
+                url: $(this).attr("action"),
+                method: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        //alert(response.message); // Show success message
+                        $("#model_create").modal("hide"); // Close modal
+                        location.reload(); // Optionally reload the page
+                    }
+                },
+                error: function (xhr) {
+                    let errorDiv = $("#createDriverError");
+                    errorDiv.removeClass("d-none"); // Make the error alert visible
+
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        // Collect and display all errors
+                        let errorMessages = Object.values(xhr.responseJSON.errors)
+                            .flat()
+                            .join("<br>");
+                        errorDiv.html(errorMessages);
+                    } else {
+                        errorDiv.html("An unexpected error occurred. Please try again.");
+                    }
+                },
+            });
+        });
+
+        // Reset error message when modal is closed
+        $("#model_create_user").on("hidden.bs.modal", function () {
+            $("#createDriverError").addClass("d-none").html("");
+            $("#createDriverForm")[0].reset(); // Reset the form
+        });
+    });
+</script>
+ 
+
+
+<script>
+    
+    
+    function mini_window_2(element) { 
+        const url = element.dataset.url;
+        var screenWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        var screenHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        var newWidth = screenWidth * 0.9;  // 90% of the screen width
+        var newHeight = screenHeight * 0.9;  // 90% of the screen height
+        var left = (screenWidth - newWidth) / 2;
+        var top = (screenHeight - newHeight) / 2;
+        var windowFeatures = `width=${newWidth},height=${newHeight},scrollbars=yes,resizable=yes,top=${top},left=${left}`;
+        var newWindow = window.open(url, "miniWindow", windowFeatures);
+        newWindow.onload = function() {
+            newWindow.location.replace(url);
+        };
+    }
+
+</script>
+{% endblock content %}
