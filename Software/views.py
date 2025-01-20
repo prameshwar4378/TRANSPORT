@@ -148,9 +148,7 @@ def update_vehicle(request, id):
         form = VehicleForm(request.POST, request.FILES, instance=vehicle)  # Populate the form with the instance data
 
         if form.is_valid():
-            
             form.save()
-
             messages.success(request, 'Vehicle Updated Successfully.')
     else:
         form = VehicleForm(instance=vehicle)  # Populate the form with the existing vehicle data on GET request
