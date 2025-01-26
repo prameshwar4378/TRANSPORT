@@ -88,49 +88,49 @@
 <div class="modal fade" id="model_create" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 800px;">
-    <div class="modal-content">
-        <div class="modal-header" style="background:#9c4b2e;">
-            <h4 class="modal-title text-white" id="exampleModalLongTitle">Create New Party</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="modal-body text-left">
-            <!-- Alert box for errors -->
-            <div class="alert alert-danger d-none" id="createPartyError"></div>
+        <div class="modal-content">
+            <div class="modal-header" style="background:#9c4b2e;">
+                <h4 class="modal-title text-white" id="exampleModalLongTitle">Create New Party</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-left">
+                <!-- Alert box for errors -->
+                <div class="alert alert-danger d-none" id="createPartyError"></div>
 
-            <!-- Form for technician creation -->
-            <form id="createPartyForm" method="POST" enctype="multipart/form-data" action="{% url "software_create_party" %}">
-                {% csrf_token %}
-                <div class="row">  
-                    <div class="col-sm-6">
-                        {{ form.name|as_crispy_field }}
+                <!-- Form for technician creation -->
+                <form id="createPartyForm" method="POST" enctype="multipart/form-data" action="{% url "software_create_party" %}">
+                    {% csrf_token %}
+                    <div class="row">  
+                        <div class="col-sm-6">
+                            {{ form.name|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-6">
+                            {{ form.gst_no|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-6">
+                            {{ form.pan_card|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-6">
+                            {{ form.adhar_card|as_crispy_field }}
+                        </div> 
+                        <div class="col-sm-6">
+                            {{ form.document1|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-6">
+                            {{ form.document2|as_crispy_field }}
+                        </div> 
                     </div>
-                    <div class="col-sm-6">
-                        {{ form.gst_no|as_crispy_field }}
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary bgcolor px-3" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
-                    <div class="col-sm-6">
-                        {{ form.pan_card|as_crispy_field }}
-                    </div>
-                    <div class="col-sm-6">
-                        {{ form.adhar_card|as_crispy_field }}
-                    </div> 
-                    <div class="col-sm-6">
-                        {{ form.document1|as_crispy_field }}
-                    </div>
-                    <div class="col-sm-6">
-                        {{ form.document2|as_crispy_field }}
-                    </div> 
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary bgcolor px-3" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 </div>
 
 

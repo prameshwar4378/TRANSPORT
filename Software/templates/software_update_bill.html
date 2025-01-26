@@ -1,0 +1,106 @@
+{% extends "base_window.html" %}
+{% block title %}Update Bill{% endblock title %}
+{% load crispy_forms_tags %}
+{% block content %}
+<style> 
+    #id_commission{
+        background-color:rgb(236, 255, 228);
+    }
+</style>
+<main id="main" class="main">
+    <section class="section dashboard">
+        <div class="alert alert-warning text-center mt-2">
+            <h2>Update Bill </h2>
+        </div>
+        <div class="container-fluid mb-3 form-header p-3">
+            <div class="row p-1 rounded">
+                <div class="col-sm-12">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-sm-1"></div>
+                            <div class="col-sm-10"> 
+
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        {{ form.vehicle|as_crispy_field }}
+                                    </div>
+                                    <div class="col-sm-4">
+                                        {{ form.party|as_crispy_field }}
+                                    </div>
+                                    <div class="col-sm-4">
+                                        {{ form.driver|as_crispy_field }}
+                                    </div>
+                                    <div class="col-sm-6">
+                                        {{ form.from_location|as_crispy_field }}
+                                    </div>
+                                    <div class="col-sm-6">
+                                        {{ form.to_location|as_crispy_field }}
+                                    </div>
+                                    <div class="col-sm-12">
+                                        {{ form.material_type|as_crispy_field }}
+                                    </div>
+                                    
+                                    <div class="col-sm-3">
+                                        {{ form.rent_amount|as_crispy_field }}
+                                    </div>
+                                    <div class="col-sm-3">
+                                        {{ form.advance_amount|as_crispy_field }}
+                                    </div>
+                                    <div class="col-sm-3">
+                                        {{ form.pending_amount|as_crispy_field }}
+                                    </div>
+                                    <div class="col-sm-3">
+                                        {{ form.commission|as_crispy_field }}
+                                    </div>
+                                    <div class="col-sm-12">
+                                        {{ form.notes|as_crispy_field }}
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            <div class="col-sm-1"></div>
+                        </div>
+                        <center><button type="submit" class="btn btn-primary mt-1 px-5">Update</button></center>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</main><!-- End #main -->
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const dropdownIds = ['id_party','id_driver','id_vehicle' ];
+        dropdownIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                new Choices(element, {
+                    searchEnabled: true,
+                    itemSelectText: '',
+                    noResultsText: 'No matching results',
+                });
+            }
+        });
+    });
+</script>
+
+   
+<script>
+    function calculate_pending_amount() {
+        // Get references to the input fields
+        const rentInput = document.getElementById("id_rent_amount");
+        const advanceInput = document.getElementById("id_advance_amount");
+        const pendingInput = document.getElementById("id_pending_amount");
+
+        // Parse the values and default to 0 if empty or invalid
+        const rentAmount = parseFloat(rentInput.value) || 0;
+        const advanceAmount = parseFloat(advanceInput.value) || 0;
+
+        // Directly set the pending amount field without extra calculations
+        pendingInput.value = rentAmount >= advanceAmount ? rentAmount - advanceAmount : 0;
+    }
+</script>
+
+{% endblock content %}

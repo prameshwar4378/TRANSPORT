@@ -1,0 +1,298 @@
+{% extends "base_window.html" %}
+{% block title %}Create Bill{% endblock title %}
+{% load crispy_forms_tags %}
+{% block content %}
+<style>
+    legend {
+        display: none;
+    }
+
+    .form-text {
+        display: none;
+    }
+
+    .form-check {
+        display: none;
+    }
+
+    #id_address {
+        height: 100px;
+    }
+
+    #id_username {
+        background-color: #eeeded;
+    }
+</style>
+<main id="main" class="main">
+    <section class="section dashboard">
+        <div class="alert alert-warning text-center mt-2">
+            <h2>Create Bill </h2>
+        </div>
+        <div class="container-fluid mb-3 form-header p-3">
+            <div class="row p-1 rounded">
+                <div class="col-sm-12">
+                    <form  method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <label for="vahicle" class="mb-1">Vehicle: &nbsp;&nbsp;<a href="#"   data-bs-toggle="modal" data-bs-target="#model_create_vehicle"  style="text-decoration: none; font-size: 15px; font-weight: 100px;">Create New</a></label>
+                                {{ bill_form.vehicle|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-4">
+                                <label for="party" class="mb-1">Party: &nbsp;&nbsp;<a href="#"  data-bs-toggle="modal" data-bs-target="#model_create_party"  style="text-decoration: none; font-size: 15px; font-weight: 100px;">Create New</a></label>
+                                {{ bill_form.party|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-4">
+                                {{ bill_form.driver|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-6">
+                                {{ bill_form.from_location|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-6">
+                                {{ bill_form.to_location|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-12">
+                                {{ bill_form.material_type|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-3">
+                                {{ bill_form.rent_amount|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-3">
+                                {{ bill_form.advance_amount|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-3">
+                                {{ bill_form.pending_amount|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-3">
+                                {{ bill_form.commission|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-12">
+                                {{ bill_form.notes|as_crispy_field }}
+                            </div>
+                        </div>
+                        <center><button type="submit" class="btn btn-primary mt-1 px-5">Create</button></center>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </section>
+</main> 
+
+
+
+<div class="modal fade" id="model_create_party" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 800px;">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#9c4b2e;">
+                <h4 class="modal-title text-white" id="exampleModalLongTitle">Create New Party</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-left">
+                <!-- Alert box for errors -->
+                <div class="alert alert-danger d-none" id="createPartyError"></div>
+
+                <!-- Form for technician creation -->
+                <form id="createPartyForm" method="POST" enctype="multipart/form-data" action="{% url "software_create_party" %}">
+                    {% csrf_token %}
+                    <div class="row">  
+                        <div class="col-sm-6">
+                            {{ party_form.name|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-6">
+                            {{ party_form.gst_no|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-6">
+                            {{ party_form.pan_card|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-6">
+                            {{ party_form.adhar_card|as_crispy_field }}
+                        </div> 
+                        <div class="col-sm-6">
+                            {{ party_form.document1|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-6">
+                            {{ party_form.document2|as_crispy_field }}
+                        </div> 
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary bgcolor px-3" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+ 
+
+<script>
+    $(document).ready(function () {
+         
+        $("#createPartyForm").on("submit", function (e) {
+            e.preventDefault(); // Prevent form from refreshing the page
+            let formData = new FormData(this);
+            $.ajax({
+                url: $(this).attr("action"),
+                method: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        //alert(response.message); // Show success message
+                        // $("#model_create_party").modal("hide"); // Close modal
+                        // location.reload(); // Optionally reload the page
+                        // Reset error message when modal is closed 
+                        });
+
+                    }
+                },
+                error: function (xhr) {
+                    let errorDiv = $("#createPartyError");
+                    errorDiv.removeClass("d-none"); // Make the error alert visible
+
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        // Collect and display all errors
+                        let errorMessages = Object.values(xhr.responseJSON.errors)
+                            .flat()
+                            .join("<br>");
+                        errorDiv.html(errorMessages);
+                    } else {
+                        errorDiv.html("An unexpected error occurred. Please try again.");
+                    }
+                },
+            });
+        });
+
+        // Reset error message when modal is closed
+        $("#model_create_party").on("hidden.bs.modal", function () {
+            $("#createPartyError").addClass("d-none").html("");
+            $("#createPartyForm")[0].reset(); // Reset the form
+        });
+    });
+</script>
+ 
+
+
+
+
+
+<div class="modal fade" id="model_create_vehicle" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 800px;">
+    <div class="modal-content">
+        <div class="modal-header" style="background:#9c4b2e;">
+            <h4 class="modal-title text-white" id="exampleModalLongTitle">Create New Vehicle</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body text-left">
+            <!-- Alert box for errors -->
+            <div class="alert alert-danger d-none" id="createVehicleError"></div>
+
+            <!-- Form for technician creation -->
+            <form id="createVehicleForm" method="POST" enctype="multipart/form-data" action="{% url "software_create_vehicle" %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-sm-6">
+                        {{ vehicle_form|crispy }} 
+                    </div> 
+                    <div class="col-sm-6">
+                        <label for="owner">Owner: <span style="color: #b8c49d;">(owner name - 88888888888)</span></label>
+                        <input list="ownerdata" class="form-control mt-2" name="owner" id="owner">
+                        <datalist id="ownerdata">
+                            {% if owner %}
+                                {% for i in owner %}
+                                    {% if i.owner_name and i.owner_mobile_number %}
+                                    <option value="{{i.owner_name}} - {{i.owner_mobile_number}}">  
+                                    {% else %}
+                                    <option value="{{i.owner_name}}">  
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </datalist>
+                    </div>  
+                     
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary bgcolor px-3" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+
+
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+    {% for msg in messages %}
+        {% if msg.tags == 'success' %}
+        swal({
+          title: "Done !",
+          text: "{{msg}}",
+          icon: "success",
+          button: "OK",
+        });
+
+        {% elif msg.tags == 'error' %}
+        swal({
+          title: "Error",
+          text: "{{msg}}",
+          icon: "error",
+          button: "OK",
+        });
+         
+        {% elif msg.tags == 'warning' %}
+        swal({
+          title: "Warning",
+          text: "{{msg}}",
+          icon: "warning",
+          button: "OK",
+        });
+         
+        {% elif msg.tags == 'info' %}
+        swal({
+          title: "Oops",
+          text: "{{msg}}",
+          icon: "info",
+          button: "OK",
+        });
+         
+        {% endif %}
+    {% endfor %}
+</script>
+ 
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const dropdownIds = ['id_owner','id_party','id_driver','id_vehicle' ];
+        dropdownIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                new Choices(element, {
+                    searchEnabled: true,
+                    itemSelectText: '',
+                    noResultsText: 'No matching results',
+                });
+            }
+        });
+    });
+</script>
+
+{% endblock content %}

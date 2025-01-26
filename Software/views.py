@@ -26,17 +26,15 @@ def create_owner(request):
             try:
                 print(request.user.business.id)
                 with transaction.atomic():
-                    fm=form.save(commit=True)
-                    fm.business=request.user.business
+                    fm=form.save(commit=False)
+                    fm.business = request.user.business
                     fm.save()
                     return JsonResponse({'success': True, 'message': 'Owner created successfully!'})
             except ValidationError as e:
                 # Handle explicit model-level validation errors
-                print(e)
                 return JsonResponse({'success': False, 'errors': {'non_field_errors': str(e)}}, status=400)
             except Exception as e:
                 # Catch any unexpected errors and return a 500 response
-                print(e)
                 return JsonResponse({'success': False, 'message': str(e)}, status=500)
         else:
             # Handle form errors
@@ -56,6 +54,9 @@ def update_owner(request, id):
         if form.is_valid():
             form.save()  # Save the updated owner inst 
             messages.success(request, 'Owner Updated Successfully.')
+        else:
+            messages.error(request, 'Form is Not Valid')
+
     else:
         form = OwnerForm(instance=owner)  # Populate the form with the existing owner data on GET request
     
@@ -80,14 +81,13 @@ def vehicle_list(request):
 import re
 def create_vehicle(request):
     if request.method == 'POST':
-        form = VehicleUpdateForm(request.POST, request.FILES)
+        form = VehicleForm(request.POST, request.FILES)
         if form.is_valid():
             owner_data = request.POST.get("owner")  # Format: "owner name - 7776824564"
             if '-' not in owner_data:
                 record_count=VehicleOwner.objects.filter(owner_name=owner_data).count()
                 if record_count > 1 :
                     return JsonResponse({'success': False, 'errors': {'non_field_errors': 'Multiple owners with the same name found. try to add mobile number as well'}}, status=400)
-                
                 owner, created = VehicleOwner.objects.get_or_create(
                         owner_name=owner_data,
                         defaults={
@@ -104,40 +104,26 @@ def create_vehicle(request):
                         }
                     )
             try:
-                
- 
                 with transaction.atomic():
-                    # Check if the owner already exists
-
-
-                    # Save the vehicle with the retrieved or newly created owner
                     vehicle = form.save(commit=False)
                     vehicle.business = request.user.business
                     vehicle.owner = owner  # Associate with the existing or new owner
-                    vehicle.save()
-
-                    message = (
-                        'Vehicle created successfully with a new owner!'
-                        if created
-                        else 'Vehicle created successfully with an existing owner!'
-                    )
-
-                    return JsonResponse({'success': True, 'message': message})
+                    vehicle.save() 
+                    if not created:
+                        messages.success(request, 'Vehicle created successfully with an existing owner!')
+                    else:
+                        messages.success(request, 'Vehicle created successfully with a new owner!')
+                    return JsonResponse({'success': True})
             except ValidationError as e:
-                # Handle explicit model-level validation errors
                 return JsonResponse({'success': False, 'errors': {'non_field_errors': str(e)}}, status=400)
             except Exception as e:
-                # Catch any unexpected errors and return a 500 response
                 return JsonResponse({'success': False, 'message': str(e)}, status=500)
         else:
-            # Handle form errors
             errors = {
                 field: [str(error) for error in error_list]
                 for field, error_list in form.errors.items()
             }
             return JsonResponse({'success': False, 'errors': errors}, status=400)
-    
-    # If the request method is not POST, return a method not allowed response
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
 
 
@@ -183,7 +169,8 @@ def create_party(request):
                     fm=form.save(commit=True)
                     fm.business=request.user.business 
                     fm.save()
-                    return JsonResponse({'success': True, 'message': 'Business created successfully!'})
+                    messages.success(request, 'Party Created successfully.')
+                    return redirect('/software/create_bill_form/')
             except ValidationError as e:
                 # Handle explicit model-level validation errors
                 return JsonResponse({'success': False, 'errors': {'non_field_errors': str(e)}}, status=400)
@@ -267,9 +254,9 @@ def update_driver(request, id):
             form.save()  # Save the updated driver inst 
             messages.success(request, 'Driver Updated Successfully.')
     else:
-        form = DriverForm(instance=driver)  # Populate the form with the existing driver data on GET request
-    
+        form = DriverForm(instance=driver)  # Populate the form with the existing driver data on GET request    
     return render(request, 'software_update_driver.html', {'form': form,'driver':driver})
+
 
 
 def delete_driver(request, id):
@@ -278,3 +265,133 @@ def delete_driver(request, id):
         driver.delete()
         messages.success(request, 'Driver deleted successfully.')
     return redirect('/software/driver_list')
+
+
+from django.core.paginator import Paginator
+
+def bill_list(request):
+    # Create the form instance
+    bill_form = BillForm()
+
+    # Optimize Bill Query
+    bill_rec = Bill.objects.only(
+        'id', 'from_location', 'to_location', 'rent_amount', 'pending_amount'
+    ).order_by('-id')
+
+    # Optimize VehicleOwner Query
+    owner_rec = VehicleOwner.objects.only('id', 'owner_name').order_by('-id')
+
+    vehicle_rec = Vehicle.objects.only('id', 'vehicle_number').order_by('-id')
+
+    # Optimize Party Query
+    party_rec = Party.objects.only('id', 'name', 'mobile').order_by('-id')
+
+    # Optimize Driver Query
+    driver_rec = Driver.objects.only('id', 'driver_name', 'mobile').order_by('-id')
+
+    # Add Pagination for Bill Records
+    paginator = Paginator(bill_rec, 10)  # Show 10 bills per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context={
+        'bill_form': bill_form, 
+        'bill_rec': page_obj,
+        'owner_rec': owner_rec,
+        'party_rec': party_rec,
+        'driver_rec': driver_rec,
+        'vehicle_rec': vehicle_rec
+        }
+    return render(
+        request,
+        'software_bill_list.html',
+        context
+    )
+
+
+
+def create_bill_form(request): 
+    bill_form=BillForm()
+    party_form=PartyForm()
+    if request.method == 'POST':
+        try:
+            form = BillForm(request.POST, request.FILES)
+            if form.is_valid():
+                print("Test 1111") 
+                with transaction.atomic():
+                    fm=form.save(commit=False)
+                    fm.business = request.user.business
+                    fm.save()
+                    messages.success(request, 'Bill created successfully')
+                    return redirect('/software/bill_list')
+            else:
+                print(form.errors)
+        except ValidationError as e:
+            
+            print(e)
+            return JsonResponse({'success': False, 'errors': {'non_field_errors': str(e)}}, status=400)
+    return render(request, 'software_create_bill_form.html',{'bill_form':bill_form,'party_form':party_form} )
+
+
+
+def create_bill(request):
+    if request.method == 'POST':
+        form = BillForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                vehicle=request.POST.get('vehicle')
+                print(vehicle)
+                vehicle = Vehicle.objects.filter(vehicle_number=vehicle).first()
+                with transaction.atomic():
+                    fm=form.save(commit=False)
+                    fm.business = request.user.business
+                    fm.vehicle = vehicle
+                    fm.save()
+                    messages.success(request, 'Bill created successfully')
+                    return JsonResponse({'success': True, 'message': 'Bill created successfully!'})
+            except ValidationError as e:
+                print(e)
+                # Handle explicit model-level validation errors
+                return JsonResponse({'success': False, 'errors': {'non_field_errors': str(e)}}, status=400)
+            except Exception as e:
+                print(e)
+                # Catch any unexpected errors and return a 500 response
+                return JsonResponse({'success': False, 'message': str(e)}, status=500)
+        else:
+            # Handle form errors
+            errors = {
+                field: [str(error) for error in error_list]
+                for field, error_list in form.errors.items()
+            }
+            return JsonResponse({'success': False, 'errors': errors}, status=400)
+    # If the request method is not POST, return a method not allowed response
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
+
+
+
+def update_bill(request, id):
+    bill = get_object_or_404(Bill, id=id)  # Safely retrieve the Driver instance or return a 404 error
+    if request.method == 'POST':
+        form = BillForm(request.POST, request.FILES, instance=bill)  # Populate the form with the instance data
+        if form.is_valid():
+                form.save()  # Save the updated bill inst 
+                messages.success(request, 'Bill Updated Successfully.')
+        else:
+            errors = {
+                field: [str(error) for error in error_list]
+                for field, error_list in form.errors.items()
+                }
+            messages.error(request, f'{errors}') 
+    else:
+        form = BillForm(instance=bill)  # Populate the form with the existing bill data on GET request
+    return render(request, 'software_update_bill.html', {'form': form,'bill':bill})
+
+
+
+def delete_bill(request, id):
+    bill = get_object_or_404(Bill, id=id)
+    if bill:
+        bill.delete()
+        messages.success(request, 'Bill deleted successfully.')
+    return redirect('/software/bill_list')
+

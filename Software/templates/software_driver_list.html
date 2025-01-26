@@ -184,7 +184,7 @@
   
   <script>
       function confirmDelete(button) {
-          var info = button.closest('tr').querySelector('td:nth-child(2)').textContent.trim();
+          var info = button.closest('tr').querySelector('td:nth-child(3)').textContent.trim();
           var deleteUrl = button.getAttribute('href');  // The delete URL
           document.getElementById('delete_info').textContent = info;
           document.getElementById('deleteButton').setAttribute('href', deleteUrl);
@@ -192,7 +192,7 @@
       }
   </script>
 
-  
+
 <script>
     $(document).ready(function () {
         $('#driver_table').DataTable({

@@ -1,0 +1,361 @@
+{% extends "software_base.html" %}
+{% block title %}Bill List{% endblock title %}
+{% load crispy_forms_tags %}
+{% block content %}
+<style>  
+    #id_commission{
+        background-color: #cfffc1;
+    }
+#id_pending_amount{
+    background-color: #f3f3f3;
+}
+</style>
+<main id="main" class="main">
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="pagetitle">
+                <h1>Bill</h1>
+                <nav>
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item"><a href="#">Bill List </a></li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="container" style="max-width:97%;">
+                <div class="text-lg-end text-start">
+                    <!-- Use text-lg-end for right alignment in large screens -->
+                     
+                    <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#model_create_bill"><i class="mdi mdi-filter"></i> Add New Bill</a>
+
+                    <a href="javascript:void(0);" data-url="{% url 'software_create_bill_form'  %}" class="btn btn-warning px-3" onclick="mini_window(this)">Create New Bill</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <section class="section dashboard">
+<hr>
+   
+        <div class="container">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-sm-12"> <br><br>
+                    
+                    <div class="row">
+                        <div class="container" style=" overflow:scroll;">
+                            <table id="bill_table" class="table table-striped table-bordered" style="width:100%; min-width: max-content;">
+                                <thead>
+                                    <tr style="background-color: rgb(56, 79, 90);">
+                                        <th scope="col" class="text-center text-white">Sr. No</th>
+                                        <th scope="col" class="text-center text-white">Vehicle Number</th>
+                                        <th scope="col" class="text-center text-white">Owner Name</th>
+                                        <th scope="col" class="text-center text-white">Driver Name</th>
+                                        <th scope="col" class="text-center text-white">Rent Pending</th>
+                                        <th scope="col" class="text-center text-white">Commission</th>
+                                        <th scope="col" class="text-center text-white">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if bill_rec %}
+                                    {% for r in bill_rec %}
+                                    <tr>
+                                        <td class="text-center">{{ forloop.counter }}</td>
+                                        <td class="text-center">{{ r.vehicle.vehicle_number }} </td>
+                                        <td class="text-center">{{ r.vehicle.owner.owner_name }} </td>
+                                        <td class="text-center">{{ r.driver.driver_name }} </td>
+                                        <td class="text-center">{{ r.pending_amount }} </td>
+                                        <td class="text-center">{{ r.commission }} </td>
+                                         
+                                        <td>
+                                            <center>
+                                                <a href="javascript:void(0);" data-url="{% url 'software_update_bill' r.id %}" class="btn btn-warning px-3" onclick="mini_window(this)">Update</a>
+                                                <a href="{% url 'software_delete_bill' r.id %}" class="btn btn-danger px-2 py-2" onclick="confirmDelete(this); return false;">Delete</a>
+                                            </center>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="10" class="text-center">No Bills Found</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                            
+                        </div>
+
+                    </div>
+                    
+
+                </div>
+            </div>
+        </div>
+</main><!-- End #main -->
+ 
+
+<div class="modal fade" id="model_create_bill" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 1200px;">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#9c4b2e;">
+                <h4 class="modal-title text-white" id="exampleModalLongTitle">Create New Bill</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-left">
+                <!-- Alert box for errors -->
+                <div class="alert alert-danger d-none" id="createBillError"></div>
+
+                <!-- Form for technician creation -->
+                <form id="createBillForm" method="POST" enctype="multipart/form-data" action="{% url "software_create_bill" %}">
+                    {% csrf_token %}
+    
+                    <div class="row"> 
+                        <div class="col-sm-6 mb-2 mt-2">
+                            <label for="vehicle">Vehicle: <span style="color: #b8c49d;">(MH20PQ1446)</span></label>
+                            <input list="vehicledata" class="form-control mt-2" name="vehicle" id="vehicle">
+                            <datalist id="vehicledata">
+                                {% if vehicle_rec %}
+                                    {% for i in vehicle_rec %}
+                                        {% if i.vehicle_number %}
+                                        <option value="{{i.vehicle_number}}">    
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </datalist>
+                        </div> 
+                        
+                        <div class="col-sm-6 mb-2 mt-2">
+                            <label for="driver">Driver: <span style="color: #b8c49d;">(driver name - 88888888888)</span></label>
+                            <input list="driverdata" class="form-control mt-2" name="driver" id="driver">
+                            <datalist id="driverdata">
+                                {% if driver_rec %}
+                                    {% for i in driver_rec %}
+                                        {% if i.driver_name and i.mobile %}
+                                        <option value="{{i.driver_name}} - {{i.mobile}}">  
+                                        {% else %}
+                                        <option value="{{i.driver_name}}">  
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </datalist>
+                        </div> 
+                        
+                        <div class="col-sm-6 mb-2 mt-2">
+                            <label for="owner">Vehicle Owner: <span style="color: #b8c49d;">(owner name - 88888888888)</span></label>
+                            <input list="ownerdata" class="form-control mt-2" name="owner" id="owner">
+                            <datalist id="ownerdata">
+                                {% if owner_rec %}
+                                    {% for i in owner_rec %}
+                                        {% if i.owner_name and i.owner_mobile_number %}
+                                        <option value="{{i.owner_name}} - {{i.owner_mobile_number}}">  
+                                        {% else %}
+                                        <option value="{{i.owner_name}}">  
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </datalist>
+                        </div> 
+                        
+                        <div class="col-sm-6 mb-2 mt-2">
+                            <label for="party">Party: <span style="color: #b8c49d;">(party name - 88888888888)</span></label>
+                            <input list="partydata" class="form-control mt-2" name="party" id="party">
+                            <datalist id="partydata">
+                                {% if party_rec %}
+                                    {% for i in party_rec %}
+                                        {% if i.name and i.mobile %}
+                                        <option value="{{i.name}} - {{i.mobile}}">  
+                                        {% else %}
+                                        <option value="{{i.name}}">  
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </datalist>
+                        </div> 
+                        
+                        <div class="col-sm-6">
+                            {{ bill_form.from_location|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-6">
+                            {{ bill_form.to_location|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-12">
+                            {{ bill_form.material_type|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-3">
+                            {{ bill_form.rent_amount|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-3">
+                            {{ bill_form.advance_amount|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-3">
+                            {{ bill_form.pending_amount|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-3">
+                            {{ bill_form.commission|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-12">
+                            {{ bill_form.notes|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary bgcolor px-3" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+                
+                <script>
+                    $(document).ready(function () {
+                        
+                        $("#createBillForm").on("submit", function (e) {
+                            e.preventDefault(); // Prevent form from refreshing the page
+                            let formData = new FormData(this);
+                            $.ajax({
+                                url: $(this).attr("action"),
+                                method: "POST",
+                                data: formData,
+                                processData: false,
+                                contentType: false,
+                                success: function (response) {
+                                    if (response.success) {
+                                        //alert(response.message); // Show success message
+                                        $("#model_create_bill").modal("hide"); // Close modal
+                                        location.reload(); // Optionally reload the page
+                                    }
+                                },
+                                error: function (xhr) {
+                                    let errorDiv = $("#createBillError");
+                                    errorDiv.removeClass("d-none"); // Make the error alert visible
+
+                                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                                        // Collect and display all errors
+                                        let errorMessages = Object.values(xhr.responseJSON.errors)
+                                            .flat()
+                                            .join("<br>");
+                                        errorDiv.html(errorMessages);
+                                    } else {
+                                        errorDiv.html("An unexpected error occurred. Please try again.");
+                                    }
+                                },
+                            });
+                        });
+
+                        // Reset error message when modal is closed
+                        $("#model_create_bill").on("hidden.bs.modal", function () {
+                            $("#createBillError").addClass("d-none").html("");
+                            $("#createBillForm")[0].reset(); // Reset the form
+                        });
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+ 
+<!-- Modal for Delete Confirmation -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+          <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete the <strong id="delete_info"></strong>?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <a id="deleteButton" href="#" class="btn btn-danger">Delete</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+  
+  <script>
+      function confirmDelete(button) {
+          var info = button.closest('tr').querySelector('td:nth-child(3)').textContent.trim();
+          var deleteUrl = button.getAttribute('href');  // The delete URL
+          document.getElementById('delete_info').textContent = info;
+          document.getElementById('deleteButton').setAttribute('href', deleteUrl);
+          new bootstrap.Modal(document.getElementById('deleteModal')).show();
+      }
+  </script>
+
+
+  {% comment %} <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const dropdownIds = ['id_owner','id_party','id_driver','id_vehicle' ];
+        dropdownIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                new Choices(element, {
+                    searchEnabled: true,
+                    itemSelectText: '',
+                    noResultsText: 'No matching results',
+                });
+            }
+        });
+    });
+</script> {% endcomment %}
+
+
+<script>
+    $(function(){
+    $("#id_vehicle").selectize();
+     $("#id_driver").selectize();
+     $("#id_party").selectize();
+    }); 
+   </script>
+   
+<script>
+    $(document).ready(function () {
+        $('#bill_table').DataTable({
+            "scrollX": true, // Enable horizontal scrolling
+            "pageLength": 50 // Set the default number of entries to display
+        });
+    });
+</script>
+
+<script>
+    function calculate_pending_amount() {
+        // Get references to the input fields
+        const rentInput = document.getElementById("id_rent_amount");
+        const advanceInput = document.getElementById("id_advance_amount");
+        const pendingInput = document.getElementById("id_pending_amount");
+
+        // Parse the values and default to 0 if empty or invalid
+        const rentAmount = parseFloat(rentInput.value) || 0;
+        const advanceAmount = parseFloat(advanceInput.value) || 0;
+
+        // Directly set the pending amount field without extra calculations
+        pendingInput.value = rentAmount >= advanceAmount ? rentAmount - advanceAmount : 0;
+    }
+</script>
+<script>
+    
+    
+    function mini_window(element) { 
+        const url = element.dataset.url;
+        var screenWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        var screenHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        var newWidth = screenWidth * 0.9;  // 90% of the screen width
+        var newHeight = screenHeight * 0.9;  // 90% of the screen height
+        var left = (screenWidth - newWidth) / 2;
+        var top = (screenHeight - newHeight) / 2;
+        var windowFeatures = `width=${newWidth},height=${newHeight},scrollbars=yes,resizable=yes,top=${top},left=${left}`;
+        var newWindow = window.open(url, "miniWindow", windowFeatures);
+        newWindow.onload = function() {
+            newWindow.location.replace(url);
+        };
+    }
+</script>
+
+{% endblock content %}

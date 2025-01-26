@@ -43,7 +43,7 @@
                                     <tr style="background-color: rgb(56, 79, 90);"> 
                                         <th scope="col" class="text-center text-white">Sr. No</th>
                                         <th scope="col" class="text-center text-white">Owner Name</th>
-                                        <th scope="col" class="text-center text-white">GST</th>
+                                        <th scope="col" class="text-center text-white">Mobile Number</th>
                                         <th scope="col" class="text-center text-white">PAN Card</th>
                                         <th scope="col" class="text-center text-white">Adhar Card</th>
                                         <th scope="col" class="text-center text-white">Document 1</th>
@@ -103,7 +103,7 @@
             <form id="createOwnerForm" method="POST" enctype="multipart/form-data" action="{% url "software_create_owner" %}">
                 {% csrf_token %}
                 <div class="row">  
-                    <div class="col-sm-6">
+                    <div class="col-sm-12">
                         {{ form.owner_name|as_crispy_field }}
                     </div>
                     <div class="col-sm-6">

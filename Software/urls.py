@@ -27,4 +27,11 @@ urlpatterns = [
     path('update_driver/<int:id>', update_driver, name='software_update_driver'),
     path('delete_driver/<int:id>', delete_driver, name='software_delete_driver'),
     
+
+    path('bill_list/', bill_list, name='software_bill_list'),
+    path('create_bill_form/', create_bill_form, name='software_create_bill_form'),
+    path('create_bill/', create_bill, name='software_create_bill'),
+    path('update_bill/<int:id>', update_bill, name='software_update_bill'),
+    path('delete_bill/<int:id>', delete_bill, name='software_delete_bill'),
+    
 ]+static(settings.STATIC_URL,document_root=settings.MEDIA_ROOT) 
