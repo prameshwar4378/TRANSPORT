@@ -72,7 +72,7 @@ def delete_owner(request, id):
 
 
 def vehicle_list(request): 
-    form=VehicleForm()
+    form=VehicleUpdateForm()
     rec=Vehicle.objects.select_related().order_by('-id')
     owner=VehicleOwner.objects.all()
     return render(request, 'software_vehicle_list.html',{'form':form,'rec':rec,'owner':owner} )
@@ -80,7 +80,7 @@ def vehicle_list(request):
 import re
 def create_vehicle(request):
     if request.method == 'POST':
-        form = VehicleForm(request.POST, request.FILES)
+        form = VehicleUpdateForm(request.POST, request.FILES)
         if form.is_valid():
             owner_data = request.POST.get("owner")  # Format: "owner name - 7776824564"
             if '-' not in owner_data:
@@ -145,13 +145,13 @@ def create_vehicle(request):
 def update_vehicle(request, id): 
     vehicle = get_object_or_404(Vehicle, id=id)  # Safely retrieve the Driver instance or return a 404 error
     if request.method == 'POST':
-        form = VehicleForm(request.POST, request.FILES, instance=vehicle)  # Populate the form with the instance data
+        form = VehicleUpdateForm(request.POST, request.FILES, instance=vehicle)  # Populate the form with the instance data
 
         if form.is_valid():
             form.save()
             messages.success(request, 'Vehicle Updated Successfully.')
     else:
-        form = VehicleForm(instance=vehicle)  # Populate the form with the existing vehicle data on GET request
+        form = VehicleUpdateForm(instance=vehicle)  # Populate the form with the existing vehicle data on GET request
     
     return render(request, 'software_update_vehicle.html', {'form': form,'vehicle':vehicle})
 

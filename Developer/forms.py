@@ -18,6 +18,11 @@ class CustomUserForm(UserCreationForm):
         model = CustomUser
         fields = ("username",'first_name','last_name','business', "password1", "password2", 'is_active')
  
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if CustomUser.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("A user with that username already exists.")
+        return username
 
 
 class UpdatePasswordForm(forms.Form):

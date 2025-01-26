@@ -15,20 +15,7 @@ class OwnerForm(forms.ModelForm):
             'document1',
             'document2',
         ] 
- 
-    def clean_pan_card(self):
-        pan_card = self.cleaned_data.get('pan_card')
-        if pan_card and not str(pan_card).lower().endswith(('.pdf', '.jpg', '.png')):
-            raise forms.ValidationError("PAN Card must be a PDF, JPG, or PNG file.")
-        return pan_card
-
-    def clean_adhar_card(self):
-        adhar_card = self.cleaned_data.get('adhar_card')
-        if adhar_card and not str(adhar_card).lower().endswith(('.pdf', '.jpg', '.png')):
-            raise forms.ValidationError("Aadhar Card must be a PDF, JPG, or PNG file.")
-        return adhar_card
-
-
+  
 
 
 
@@ -36,7 +23,7 @@ class OwnerForm(forms.ModelForm):
 class VehicleForm(forms.ModelForm):
     class Meta:
         model = Vehicle
-        fields = [ 
+        fields = [  
             'vehicle_name',
             'vehicle_number',
             'model_name', 
@@ -46,29 +33,28 @@ class VehicleForm(forms.ModelForm):
         ]
         widgets = {
             'notes': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
-        }
+        } 
 
-    def clean_vehicle_number(self):
-        vehicle_number = self.cleaned_data.get('vehicle_number')
-        # Exclude the current instance from uniqueness check
-        if Vehicle.objects.filter(vehicle_number=vehicle_number).exclude(id=self.instance.id).exists():
-            raise forms.ValidationError("A vehicle with this number already exists.")
-        return vehicle_number
 
-    # def clean_owner_mobile_number(self):
-    #     mobile_number = self.cleaned_data.get('owner_mobile_number')
-    #     if mobile_number:
-    #         if not mobile_number.isdigit() or len(mobile_number) != 10:
-    #             raise forms.ValidationError("Enter a valid 10-digit mobile number.")
-    #     return mobile_number
 
-    # def clean_owner_alternate_mobile_number(self):
-    #     alternate_number = self.cleaned_data.get('owner_alternate_mobile_number')
-    #     if alternate_number:
-    #         if not alternate_number.isdigit() or len(alternate_number) != 10:
-    #             raise forms.ValidationError("Enter a valid 10-digit alternate mobile number.")
-    #     return alternate_number
+class VehicleUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Vehicle
+        fields = [  
+            'owner',
+            'vehicle_name',
+            'vehicle_number',
+            'model_name', 
+            'notes',
+            'document1',
+            'document2', 
+        ]
+        widgets = {
+            'notes': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
+        } 
 
+
+        
 
 class PartyForm(forms.ModelForm):
     class Meta:
