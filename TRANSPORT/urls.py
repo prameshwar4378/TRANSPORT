@@ -19,11 +19,12 @@ from django.urls import path,include
 
 from django.conf import settings
 from django.conf.urls.static import static 
-from Developer.views import login,logout
+from Developer.views import login,logout,index
 from Developer import urls as DeveloperUrls
 from Software import urls as SoftwareUrls 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', index, name='index'),
     path('login/', login, name='login'),
     path('logout/', logout, name='logout'),
     path('developer/', include(DeveloperUrls)),

@@ -34,6 +34,14 @@ class OwnerForm(forms.ModelForm):
 
 
 class VehicleForm(forms.ModelForm):
+
+    owner = forms.CharField(
+        max_length=255,
+        label="",
+        required=False, 
+        widget=forms.TextInput(attrs={'class': 'form-control', 'list': 'ownerdata'})
+    )
+    
     class Meta:
         model = Vehicle
         fields = [  
@@ -46,9 +54,37 @@ class VehicleForm(forms.ModelForm):
         ]
         widgets = {
             'notes': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
-        } 
+        }  
 
+    # Custom validation for owner field
+    def clean_owner(self):
+        name_pattern = r"^[A-Za-z ]+$"  # Matches names with alphabets and spaces
+        phone_pattern = r"^\d{10}$"  # Matches a 10-digit mobile number
 
+        owner = self.cleaned_data.get('owner')  # Data format can be: "Suresh Jadhav - 8888888888", "Suresh Jadhav", "8888888888", etc.
+        owner = str(owner).strip()
+
+        if owner:
+            if '-' in owner:
+                # Split the input into name and mobile number
+                parts = owner.split(' - ', 1)
+                if len(parts) != 2:
+                    raise forms.ValidationError("Invalid owner data format. Should be 'Name - Mobile Number'.")
+                name, mobile_number = parts
+                name = name.strip()
+                mobile_number = mobile_number.strip()
+                # Validate name and mobile number separately
+                if not re.match(name_pattern, name):
+                    raise forms.ValidationError("Invalid owner name format.")
+                if not re.match(phone_pattern, mobile_number):
+                    raise forms.ValidationError("Invalid owner mobile number format. Ensure it's exactly 10 digits.")
+            else:
+                # Case when owner is just a name or just a mobile number
+                # if not (re.match(name_pattern, owner) or re.match(phone_pattern, owner)):
+                #     raise forms.ValidationError("Invalid owner data format. Please provide either a valid name or a valid mobile number.")
+                raise forms.ValidationError("Invalid owner data format. Should be 'Name - Mobile Number'.")
+        return owner
+    
 
 class VehicleUpdateForm(forms.ModelForm):
     class Meta:
@@ -65,8 +101,6 @@ class VehicleUpdateForm(forms.ModelForm):
         widgets = {
             'notes': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
         } 
-
-
         
 
 class PartyForm(forms.ModelForm):
@@ -79,6 +113,8 @@ class PartyForm(forms.ModelForm):
             'adhar_card',
             'document1',
             'document2',
+            'mobile',
+            'alternate_mobile',
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter party name'}),
@@ -150,127 +186,7 @@ class DriverForm(forms.ModelForm):
         return adhar_card
     
 
-
-
  
-
-# class BillForm(forms.Form):
-#     from_location = forms.CharField(
-#         max_length=255, 
-#         label="From Location", 
-#         widget=forms.TextInput(attrs={'class': 'form-control'})
-#     )
- 
-#     to_location = forms.CharField(
-#         max_length=255, 
-#         label="To Location", 
-#         widget=forms.TextInput(attrs={'class': 'form-control'})
-#     )
-#     material_type = forms.CharField(
-#         max_length=255, 
-#         label="Type of Material", 
-#         widget=forms.TextInput(attrs={'class': 'form-control'}),
-#         required=False, 
-#     )
-#     rent_amount = forms.DecimalField(
-#         max_digits=10, 
-#         decimal_places=2, 
-#         label="Rent Amount", 
-#         widget=forms.NumberInput(attrs={'class': 'form-control', 'oninput': 'calculate_pending_amount()'})
-#     )
-#     advance_amount = forms.DecimalField(
-#         max_digits=10, 
-#         decimal_places=2, 
-#         label="Advance Amount", 
-#         widget=forms.NumberInput(attrs={'class': 'form-control', 'oninput': 'calculate_pending_amount()'})
-#     )
-#     pending_amount = forms.DecimalField(
-#         max_digits=10, 
-#         decimal_places=2, 
-#         label="Pending Amount", 
-#         widget=forms.NumberInput(attrs={'class': 'form-control', 'readonly': True})
-#     )
-#     commission = forms.DecimalField(
-#         max_digits=10, 
-#         decimal_places=2, 
-#         label="Commission", 
-#         required=False, 
-#         widget=forms.NumberInput(attrs={'class': 'form-control'})
-#     )
-#     notes = forms.CharField(
-#         label="Additional Notes", 
-#         required=False, 
-#         widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3})
-#     )
-
-
-#     # Add the missing fields
-#     driver = forms.CharField(
-#         max_length=255,
-#         label="Driver",
-#         widget=forms.TextInput(attrs={'class': 'form-control', 'list': 'driverdata'})
-#     )
-#     vehicle = forms.CharField(
-#         max_length=255,
-#         label="Vehicle",
-#         widget=forms.TextInput(attrs={'class': 'form-control', 'list': 'vehicledata'})
-#     )
-#     owner = forms.CharField(
-#         max_length=255,
-#         label="Owner",
-#         widget=forms.TextInput(attrs={'class': 'form-control', 'list': 'ownerdata'})
-#     )
-#     party = forms.CharField(
-#         max_length=255,
-#         label="Party",
-#         widget=forms.TextInput(attrs={'class': 'form-control', 'list': 'partydata'})
-#     )
-    
-#     # Custom Validation
-#     def clean(self):
-#         cleaned_data = super().clean()
-#         rent_amount = cleaned_data.get('rent_amount')
-#         advance_amount = cleaned_data.get('advance_amount')
-
-#         if advance_amount is not None and rent_amount is not None:
-#             if advance_amount > rent_amount:
-#                 raise forms.ValidationError("Advance amount cannot be greater than rent amount.")
- 
-#         driver = cleaned_data.get('driver')
-#         vehicle = cleaned_data.get('vehicle')
-#         party = cleaned_data.get('party')
-#         owner = cleaned_data.get('owner')
-
-#         print(driver) 
-#         print(vehicle)
-#         print(party)
-#         print(owner)
-        
-#         return cleaned_data
-
-# def save(self, commit=True):
-#     # Save the data to the database or process it as needed
-#     data = self.cleaned_data
-#     vehicle = data.get('vehicle')
-    
-#     # Retrieve the vehicle instance using the vehicle_number
-#     vehicle = Vehicle.objects.filter(vehicle_number=vehicle).first()
-
-#     # Create the Bill object and save it
-#     bill = Bill.objects.create(
-#         from_location=data['from_location'],
-#         to_location=data['to_location'],
-#         material_type=data['material_type'],
-#         rent_amount=data['rent_amount'],
-#         advance_amount=data['advance_amount'],
-#         pending_amount=data['pending_amount'],
-#         commission=data['commission'],
-#         notes=data['notes'],
-#         business=self.request.user.business,  # Assuming 'business' is related to the user
-#         vehicle=vehicle,
-#     ).save()
-#     return bill
-
 import re
 
 
@@ -346,17 +262,14 @@ class BillForm(forms.ModelForm):
                 name, mobile_number = parts
                 name = name.strip()
                 mobile_number = mobile_number.strip()
-                
+
                 # Validate name and mobile number separately
                 if not re.match(name_pattern, name):
                     raise forms.ValidationError("Invalid driver name format.")
                 if not re.match(phone_pattern, mobile_number):
                     raise forms.ValidationError("Invalid driver mobile number format. Ensure it's exactly 10 digits.")
             else:
-                # Case when driver is just a name or just a mobile number
-                if not (re.match(name_pattern, driver) or re.match(phone_pattern, driver)):
-                    raise forms.ValidationError("Invalid driver data format. Please provide either a valid name or a valid mobile number.")
-        
+                raise forms.ValidationError("Invalid driver data format. Should be 'Name - Mobile Number'.")
         return driver
     
     # Custom validation for owner field
@@ -378,16 +291,16 @@ class BillForm(forms.ModelForm):
                 name, mobile_number = parts
                 name = name.strip()
                 mobile_number = mobile_number.strip()
-                
+                if not name:
+                    raise forms.ValidationError("Invalid owner data format. Should be 'Name - Mobile Number")                
                 # Validate name and mobile number separately
                 if not re.match(name_pattern, name):
                     raise forms.ValidationError("Invalid owner name format.")
                 if not re.match(phone_pattern, mobile_number):
                     raise forms.ValidationError("Invalid owner mobile number format. Ensure it's exactly 10 digits.")
             else:
-                # Case when owner is just a name or just a mobile number
-                if not (re.match(name_pattern, owner) or re.match(phone_pattern, owner)):
-                    raise forms.ValidationError("Invalid owner data format. Please provide either a valid name or a valid mobile number.")
+                raise forms.ValidationError("Invalid owner data format. Should be 'Name - Mobile Number'.")
+
         
         return owner
     
@@ -412,7 +325,9 @@ class BillForm(forms.ModelForm):
                 name, mobile_number = parts
                 name = name.strip()
                 mobile_number = mobile_number.strip()
-                
+                if not name:
+                    raise forms.ValidationError("Invalid party data format. Should be 'Name - Mobile Number")
+                                
                 # Validate name and mobile number separately
                 if not re.match(name_pattern, name):
                     raise forms.ValidationError("Invalid party name format.")
@@ -420,8 +335,9 @@ class BillForm(forms.ModelForm):
                     raise forms.ValidationError("Invalid party mobile number format. Ensure it's exactly 10 digits.")
             else:
                 # Case when party is just a name or just a mobile number
-                if not (re.match(name_pattern, party) or re.match(phone_pattern, party)):
-                    raise forms.ValidationError("Invalid party data format. Please provide either a valid name or a valid mobile number.")
+                # if not (re.match(name_pattern, party) or re.match(phone_pattern, party)):
+                #     raise forms.ValidationError("Invalid party data format. Please provide either a valid name or a valid mobile number.")
+                raise forms.ValidationError("Invalid party data format. Should be 'Name - Mobile Number'.")
         
         return party
     

@@ -73,7 +73,7 @@ def delete_owner(request, id):
 
 
 def vehicle_list(request): 
-    form=VehicleUpdateForm()
+    form=VehicleForm()
     rec=Vehicle.objects.select_related().order_by('-id')
     owner=VehicleOwner.objects.all()
     return render(request, 'software_vehicle_list.html',{'form':form,'rec':rec,'owner':owner} )
@@ -84,25 +84,12 @@ def create_vehicle(request):
         form = VehicleForm(request.POST, request.FILES)
         if form.is_valid():
             owner_data = request.POST.get("owner")  # Format: "owner name - 7776824564"
-            if '-' not in owner_data:
-                record_count=VehicleOwner.objects.filter(owner_name=owner_data).count()
-                if record_count > 1 :
-                    return JsonResponse({'success': False, 'errors': {'non_field_errors': 'Multiple owners with the same name found. try to add mobile number as well'}}, status=400)
-                owner, created = VehicleOwner.objects.get_or_create(
-                        owner_name=owner_data,
-                        defaults={
-                            'owner_alternate_mobile_number': None,  # Set defaults as needed
-                        }
-                    )
-            else:
-                owner_name, owner_mobile = [x.strip() for x in owner_data.split('-')]
-                owner, created = VehicleOwner.objects.get_or_create(
-                        owner_name=owner_name,
-                        owner_mobile_number=owner_mobile,
-                        defaults={
-                            'owner_alternate_mobile_number': None,  # Set defaults as needed
-                        }
-                    )
+            if owner_data:
+                parts = owner_data.split(' - ') # Split the string into name and phone number
+                name, mobile_number = parts
+                name = name.strip()
+                mobile_number = mobile_number.strip() 
+                owner, created = VehicleOwner.objects.get_or_create(owner_name=name,owner_mobile_number=mobile_number) 
             try:
                 with transaction.atomic():
                     vehicle = form.save(commit=False)
@@ -352,7 +339,6 @@ def create_bill(request):
             return JsonResponse({'success': False, 'errors': errors}, status=400)
     # If the request method is not POST, return a method not allowed response
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
-
 
 
 def update_bill(request, id):

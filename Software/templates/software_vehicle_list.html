@@ -124,8 +124,9 @@
                         {{ form.model_name|as_crispy_field }}
                     </div> 
                     <div class="col-sm-6">
-                        <label for="owner">Owner: <span style="color: #b8c49d;">(owner name - 88888888888)</span></label>
-                        <input list="ownerdata" class="form-control mt-2" name="owner" id="owner">
+                        <label for="owner" class="mb-2">Owner: <span style="color: #b8c49d;">(owner name - 88888888888)</span></label>
+                       {% comment %}  <input list="ownerdata" class="form-control mt-2" name="owner" id="owner"> {% endcomment %}
+                        {{ form.owner|as_crispy_field }}
                         <datalist id="ownerdata">
                             {% if owner %}
                                 {% for i in owner %}

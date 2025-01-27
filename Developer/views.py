@@ -7,6 +7,10 @@ from . forms import *
 from django.db import  transaction
 from django.http import JsonResponse
 
+def index(request):
+    return render(request,"index.html")
+
+
 def login(request): 
     if request.user.is_authenticated:
         return redirect_user_based_on_role(request, request.user)
