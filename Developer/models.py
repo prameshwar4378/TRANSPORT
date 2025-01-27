@@ -142,7 +142,10 @@ class Bill(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Bill #{self.bill_number} for {self.party.name}"
+        if self.bill_number and self.party:
+            return f"Bill #{self.bill_number} for {self.party.name}"
+        else:
+            return f"Bill #{self.bill_number}"
 
     def clean(self):
         """

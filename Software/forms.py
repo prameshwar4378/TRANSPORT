@@ -271,6 +271,7 @@ class DriverForm(forms.ModelForm):
 #     ).save()
 #     return bill
 
+import re
 
 
 class BillForm(forms.ModelForm):
@@ -279,21 +280,28 @@ class BillForm(forms.ModelForm):
     driver = forms.CharField(
         max_length=255,
         label="Driver",
+        required=False, 
         widget=forms.TextInput(attrs={'class': 'form-control', 'list': 'driverdata'})
     )
     vehicle = forms.CharField(
         max_length=255,
         label="Vehicle",
-        widget=forms.TextInput(attrs={'class': 'form-control', 'list': 'vehicledata'})
+        required=True, 
+        widget=forms.TextInput(attrs={'class': 'form-control', 'list': 'vehicledata'}),
+        error_messages={
+        'required': 'Vehicle Number are required.',
+    }
     )
     owner = forms.CharField(
         max_length=255,
         label="Owner",
+        required=False, 
         widget=forms.TextInput(attrs={'class': 'form-control', 'list': 'ownerdata'})
     )
     party = forms.CharField(
         max_length=255,
         label="Party",
+        required=False, 
         widget=forms.TextInput(attrs={'class': 'form-control', 'list': 'partydata'})
     )
     
@@ -307,26 +315,140 @@ class BillForm(forms.ModelForm):
         widgets = {
             'rent_amount': forms.TextInput(attrs={'oninput': 'calculate_pending_amount()'}),
             'advance_amount': forms.TextInput(attrs={'oninput': 'calculate_pending_amount()'}),
+            'notes': forms.TextInput(attrs={'row': 3}),
         }
     # Custom Validation
     def clean(self):
         cleaned_data = super().clean()
         rent_amount = cleaned_data.get('rent_amount')
         advance_amount = cleaned_data.get('advance_amount')
-
         if advance_amount is not None and rent_amount is not None:
             if advance_amount > rent_amount:
                 raise forms.ValidationError("Advance amount cannot be greater than rent amount.")
- 
-        driver = cleaned_data.get('driver')
-        vehicle = cleaned_data.get('vehicle')
-        party = cleaned_data.get('party')
-        owner = cleaned_data.get('owner')
+        return cleaned_data
 
-        print(driver) 
-        print(vehicle)
-        print(party)
-        print(owner)
+    # Custom validation for driver field
+    def clean_driver(self):
+        name_pattern = r"^[A-Za-z ]+$"  # Matches names with alphabets and spaces
+        phone_pattern = r"^\d{10}$"  # Matches a 10-digit mobile number
+
+        driver = self.cleaned_data.get('driver')  # Data format can be: "Suresh Jadhav - 8888888888", "Suresh Jadhav", "8888888888", etc.
+        driver = str(driver).strip()
+
+        if driver:
+            if '-' in driver:
+                # Split the input into name and mobile number
+                parts = driver.split(' - ', 1)
+                
+                if len(parts) != 2:
+                    raise forms.ValidationError("Invalid driver data format. Should be 'Name - Mobile Number'.")
+                
+                name, mobile_number = parts
+                name = name.strip()
+                mobile_number = mobile_number.strip()
+                
+                # Validate name and mobile number separately
+                if not re.match(name_pattern, name):
+                    raise forms.ValidationError("Invalid driver name format.")
+                if not re.match(phone_pattern, mobile_number):
+                    raise forms.ValidationError("Invalid driver mobile number format. Ensure it's exactly 10 digits.")
+            else:
+                # Case when driver is just a name or just a mobile number
+                if not (re.match(name_pattern, driver) or re.match(phone_pattern, driver)):
+                    raise forms.ValidationError("Invalid driver data format. Please provide either a valid name or a valid mobile number.")
         
+        return driver
+    
+    # Custom validation for owner field
+    def clean_owner(self):
+        name_pattern = r"^[A-Za-z ]+$"  # Matches names with alphabets and spaces
+        phone_pattern = r"^\d{10}$"  # Matches a 10-digit mobile number
+
+        owner = self.cleaned_data.get('owner')  # Data format can be: "Suresh Jadhav - 8888888888", "Suresh Jadhav", "8888888888", etc.
+        owner = str(owner).strip()
+
+        if owner:
+            if '-' in owner:
+                # Split the input into name and mobile number
+                parts = owner.split(' - ', 1)
+                
+                if len(parts) != 2:
+                    raise forms.ValidationError("Invalid owner data format. Should be 'Name - Mobile Number'.")
+                
+                name, mobile_number = parts
+                name = name.strip()
+                mobile_number = mobile_number.strip()
+                
+                # Validate name and mobile number separately
+                if not re.match(name_pattern, name):
+                    raise forms.ValidationError("Invalid owner name format.")
+                if not re.match(phone_pattern, mobile_number):
+                    raise forms.ValidationError("Invalid owner mobile number format. Ensure it's exactly 10 digits.")
+            else:
+                # Case when owner is just a name or just a mobile number
+                if not (re.match(name_pattern, owner) or re.match(phone_pattern, owner)):
+                    raise forms.ValidationError("Invalid owner data format. Please provide either a valid name or a valid mobile number.")
+        
+        return owner
+    
+
+
+    # Custom validation for party field
+    def clean_party(self):
+        name_pattern = r"^[A-Za-z ]+$"  # Matches names with alphabets and spaces
+        phone_pattern = r"^\d{10}$"  # Matches a 10-digit mobile number
+
+        party = self.cleaned_data.get('party')  # Data format can be: "Suresh Jadhav - 8888888888", "Suresh Jadhav", "8888888888", etc.
+        party = str(party).strip()
+
+        if party:
+            if '-' in party:
+                # Split the input into name and mobile number
+                parts = party.split(' - ', 1)
+                
+                if len(parts) != 2:
+                    raise forms.ValidationError("Invalid party data format. Should be 'Name - Mobile Number'.")
+                
+                name, mobile_number = parts
+                name = name.strip()
+                mobile_number = mobile_number.strip()
+                
+                # Validate name and mobile number separately
+                if not re.match(name_pattern, name):
+                    raise forms.ValidationError("Invalid party name format.")
+                if not re.match(phone_pattern, mobile_number):
+                    raise forms.ValidationError("Invalid party mobile number format. Ensure it's exactly 10 digits.")
+            else:
+                # Case when party is just a name or just a mobile number
+                if not (re.match(name_pattern, party) or re.match(phone_pattern, party)):
+                    raise forms.ValidationError("Invalid party data format. Please provide either a valid name or a valid mobile number.")
+        
+        return party
+    
+    
+class BillUpdateForm(forms.ModelForm):
+ 
+    
+    class Meta:
+        model = Bill
+        fields = [
+            'vehicle','driver','party','from_location', 'to_location', 'material_type', 'rent_amount', 'advance_amount',
+            'pending_amount', 'commission', 'notes'
+        ]
+
+        widgets = {
+            'rent_amount': forms.TextInput(attrs={'oninput': 'calculate_pending_amount()'}),
+            'advance_amount': forms.TextInput(attrs={'oninput': 'calculate_pending_amount()'}),
+            'notes': forms.TextInput(attrs={'row': 3}),
+        }
+    # Custom Validation
+    def clean(self):
+        cleaned_data = super().clean()
+        rent_amount = cleaned_data.get('rent_amount')
+        advance_amount = cleaned_data.get('advance_amount')
+        if advance_amount is not None and rent_amount is not None:
+            if advance_amount > rent_amount:
+                raise forms.ValidationError("Advance amount cannot be greater than rent amount.")
+
         return cleaned_data
      

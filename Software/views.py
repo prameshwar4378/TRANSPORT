@@ -151,9 +151,6 @@ def delete_vehicle(request, id):
 
 
 
-
-
-
 def party_list(request): 
     form=PartyForm()
     rec=Party.objects.select_related().order_by('-id')
@@ -162,15 +159,15 @@ def party_list(request):
 def create_party(request):
     if request.method == 'POST':
         form = PartyForm(request.POST, request.FILES)
-        
         if form.is_valid():
             try:
                 with transaction.atomic():
                     fm=form.save(commit=True)
                     fm.business=request.user.business 
                     fm.save()
+
                     messages.success(request, 'Party Created successfully.')
-                    return redirect('/software/create_bill_form/')
+                    return JsonResponse({'success': True})
             except ValidationError as e:
                 # Handle explicit model-level validation errors
                 return JsonResponse({'success': False, 'errors': {'non_field_errors': str(e)}}, status=400)
@@ -277,19 +274,11 @@ def bill_list(request):
     bill_rec = Bill.objects.only(
         'id', 'from_location', 'to_location', 'rent_amount', 'pending_amount'
     ).order_by('-id')
-
-    # Optimize VehicleOwner Query
     owner_rec = VehicleOwner.objects.only('id', 'owner_name').order_by('-id')
-
     vehicle_rec = Vehicle.objects.only('id', 'vehicle_number').order_by('-id')
-
-    # Optimize Party Query
     party_rec = Party.objects.only('id', 'name', 'mobile').order_by('-id')
-
-    # Optimize Driver Query
     driver_rec = Driver.objects.only('id', 'driver_name', 'mobile').order_by('-id')
 
-    # Add Pagination for Bill Records
     paginator = Paginator(bill_rec, 10)  # Show 10 bills per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -309,39 +298,36 @@ def bill_list(request):
     )
 
 
-
-def create_bill_form(request): 
-    bill_form=BillForm()
-    party_form=PartyForm()
-    if request.method == 'POST':
-        try:
-            form = BillForm(request.POST, request.FILES)
-            if form.is_valid():
-                print("Test 1111") 
-                with transaction.atomic():
-                    fm=form.save(commit=False)
-                    fm.business = request.user.business
-                    fm.save()
-                    messages.success(request, 'Bill created successfully')
-                    return redirect('/software/bill_list')
-            else:
-                print(form.errors)
-        except ValidationError as e:
-            
-            print(e)
-            return JsonResponse({'success': False, 'errors': {'non_field_errors': str(e)}}, status=400)
-    return render(request, 'software_create_bill_form.html',{'bill_form':bill_form,'party_form':party_form} )
-
-
-
+ 
 def create_bill(request):
     if request.method == 'POST':
         form = BillForm(request.POST, request.FILES)
         if form.is_valid():
             try:
-                vehicle=request.POST.get('vehicle')
-                print(vehicle)
-                vehicle = Vehicle.objects.filter(vehicle_number=vehicle).first()
+                name_pattern = r"^[A-Za-z ]+$"
+                phone_pattern = r"^\d{10}$"
+
+                vehicle_number=request.POST.get('vehicle') 
+                vehicle = Vehicle.objects.filter(vehicle_number=vehicle_number).first()
+                if not vehicle:
+                    vehicle=Vehicle.objects.create(vehicle_number=vehicle_number)
+
+                driver=request.POST.get('driver') 
+                if driver:
+                    if '-' in driver:
+                        name, mobile_number = driver.split(' - ')
+                        if re.match(name_pattern, name.strip()) and re.match(phone_pattern, mobile_number.strip()):
+                            name_var = name.strip()
+                            mobile_number_var = mobile_number.strip()
+                            print("Name is = ",name_var)
+                            print("mobile_number_var is = ", mobile_number_var) 
+                    else:
+                        driver = driver.strip()
+                        if re.match(name_pattern, driver):
+                            print("Only name are present = ",driver)
+                        elif re.match(phone_pattern, driver):
+                            print("Only mobile number is present = ",driver)
+ 
                 with transaction.atomic():
                     fm=form.save(commit=False)
                     fm.business = request.user.business
@@ -371,8 +357,9 @@ def create_bill(request):
 
 def update_bill(request, id):
     bill = get_object_or_404(Bill, id=id)  # Safely retrieve the Driver instance or return a 404 error
+    print(bill)
     if request.method == 'POST':
-        form = BillForm(request.POST, request.FILES, instance=bill)  # Populate the form with the instance data
+        form = BillUpdateForm(request.POST, request.FILES, instance=bill)  # Populate the form with the instance data
         if form.is_valid():
                 form.save()  # Save the updated bill inst 
                 messages.success(request, 'Bill Updated Successfully.')
@@ -383,7 +370,7 @@ def update_bill(request, id):
                 }
             messages.error(request, f'{errors}') 
     else:
-        form = BillForm(instance=bill)  # Populate the form with the existing bill data on GET request
+        form = BillUpdateForm(instance=bill)  # Populate the form with the existing bill data on GET request
     return render(request, 'software_update_bill.html', {'form': form,'bill':bill})
 
 
