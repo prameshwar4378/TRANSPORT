@@ -122,7 +122,6 @@ class Bill(models.Model):
         'VehicleOwner', on_delete=models.SET_NULL, null=True, blank=True, related_name='referenced_bills', verbose_name="Referenced Owner"
     )
     
-    date_time = models.DateTimeField(default=now, verbose_name="Bill Date & Time")
     from_location = models.CharField(max_length=255, verbose_name="From Location")
     to_location = models.CharField(max_length=255, verbose_name="To Location")
     material_type = models.CharField(max_length=255, null=True, blank=True, verbose_name="Type of Material")

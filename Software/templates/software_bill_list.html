@@ -27,6 +27,8 @@
             <div class="container" style="max-width:97%;">
                 <div class="text-lg-end text-start">
                     <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#model_create_bill"><i class="mdi mdi-filter"></i> Add New Bill</a>
+                    <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#model_filter"><i class="mdi mdi-filter"></i> Filter</a>
+                    <a href="#" class="btn btn-success" data-toggle="modal" data-target=""><i class="mdi mdi-filter"></i> Export</a>
                 </div>
             </div>
         </div>
@@ -83,11 +85,25 @@
                                 </tbody>
                             </table>
                             
-                        </div>
-
-                    </div>
+                            <!-- Pagination controls -->
+                            <div class="pagination-container">
+                                <div class="pagination">
+                                    {% if bill_rec.has_previous %}
+                                        <a href="?page=1&{{ filter_params }}">« First</a>
+                                        <a href="?page={{ bill_rec.previous_page_number }}&{{ filter_params }}">Previous</a>
+                                    {% endif %}
+                                    
+                                    <span class="current-page">Page {{ bill_rec.number }} of {{ bill_rec.paginator.num_pages }}</span>
                     
-
+                                    {% if bill_rec.has_next %}
+                                        <a href="?page={{ bill_rec.next_page_number }}&{{ filter_params }}">Next</a>
+                                        <a href="?page={{ bill_rec.paginator.num_pages }}&{{ filter_params }}">Last »</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                                                        
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -262,7 +278,83 @@
 </div>
 
 
- 
+
+<div class="modal fade" id="model_filter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 800px;">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#9c4b2e;">
+                <h4 class="modal-title text-white" id="exampleModalLongTitle">Filter Job Card</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-left">
+                <form method="GET" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-sm-4">
+                            {{ filter.form.bill_number|as_crispy_field }}
+                        </div> 
+                        <div class="col-sm-4">
+                            {{ filter.form.start_date|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-4">
+                            {{ filter.form.end_date|as_crispy_field }}
+                        </div> 
+                    </div>
+                
+                    <div class="row">
+                        <div class="col-sm-4">
+                            {{ filter.form.commission_less_than|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-4">
+                            {{ filter.form.commission_greater_than|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-4">
+                            {{ filter.form.pending_amount|as_crispy_field }}
+                        </div>
+                    </div>
+                
+                    <div class="row">
+                        <div class="col-sm-6">
+                            {{ filter.form.from_location|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-6">
+                            {{ filter.form.to_location|as_crispy_field }}
+                        </div>
+                    </div>
+                
+                    <div class="row">
+                        <div class="col-sm-6">
+                            {{ filter.form.reference|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-6">
+                            {{ filter.form.party|as_crispy_field }}
+                        </div>
+                    </div>
+                
+                    <div class="row">
+                        <div class="col-sm-6">
+                            {{ filter.form.vehicle|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-6">
+                            {{ filter.form.driver|as_crispy_field }}
+                        </div>
+                    </div>
+                 
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary bgcolor px-3" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 <!-- Modal for Delete Confirmation -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">

@@ -251,6 +251,7 @@ def delete_driver(request, id):
 
 
 from django.core.paginator import Paginator
+from .filters import *
 
 def bill_list(request):
     # Create the form instance
@@ -265,17 +266,27 @@ def bill_list(request):
     party_rec = Party.objects.only('id', 'name', 'mobile').order_by('-id')
     driver_rec = Driver.objects.only('id', 'driver_name', 'mobile').order_by('-id')
 
-    paginator = Paginator(bill_rec, 10)  # Show 10 bills per page
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
+    filter = BillFilter(request.GET, queryset=bill_rec)
+    filtered_rec = filter.qs  # Filtered queryset
+    # Pagination
+    paginator = Paginator(filtered_rec, 50)  # Show 10 job cards per page.
+    page_number = request.GET.get('page')  # Get the page number from the GET request
+    page_obj = paginator.get_page(page_number)  # Get the corresponding page object
+    
+    # Include the filter parameters in the pagination context
+    filter_params = request.GET.copy()  # Copy the GET parameters
+    if 'page' in filter_params:
+        del filter_params['page']  # Remove the page parameter if it exists
+    
     context={
         'bill_form': bill_form, 
         'bill_rec': page_obj,
         'owner_rec': owner_rec,
         'party_rec': party_rec,
         'driver_rec': driver_rec,
-        'vehicle_rec': vehicle_rec
+        'vehicle_rec': vehicle_rec,
+        'filter_params': filter_params.urlencode(),
+        'filter': filter,
         }
     return render(
         request,
@@ -403,8 +414,10 @@ def create_bill(request):
                     messages.success(request, 'Bill created successfully')
                     return JsonResponse({'success': True, 'message': 'Bill created successfully!'})
             except ValidationError as e:
+                print(f"Error while creating the bill: {e}")
                 return JsonResponse({'success': False, 'errors': {'non_field_errors': str(e)}}, status=400)
             except Exception as e:
+                print(f"Error while creating the bill: {e}")
                 return JsonResponse({'success': False, 'message': str(e)}, status=500)
         else:
             errors = {
