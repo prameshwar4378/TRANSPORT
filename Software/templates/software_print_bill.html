@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill</title>
+    <link rel="stylesheet" href="{% static 'assets/css/materialdesignicons.min.css' %}">
+
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            margin: 10px;
+            /* Adjust margin as needed */
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .bill {
+            padding: 10px;
+            border: 1px solid #ccc;
+            max-width: 800px;
+            margin: auto;
+            font-size: 12px;
+            line-height: 24px;
+            font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+            color: #555;
+        }
+
+        .bill-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+        }
+
+        .bill-table th,
+        .bill-table td {
+            border: 1px solid #ddd;
+            padding: 3px;
+            text-align: left;
+        }
+
+        .bill-table th,
+        .table-footer {
+            background-color: #f2f2f2;
+        }
+
+
+        .company-details {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 2px solid #ccc;
+        }
+
+        .logo img {
+            max-width: 240px;
+            max-height: 240px;
+        }
+
+        .info {
+            text-align: right;
+        }
+
+        .info h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .info p {
+            margin: 5px 0;
+            font-size: 1em;
+            color: #555;
+        }
+
+        .customer-details {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .billing-section,
+        .shipping-section,
+        .bill-details {
+            width: 50%;
+            /* Adjust width as needed */
+            margin-top: -30px;
+        }
+
+        .billing-section,
+        .shipping-section h2,
+        .bill-details h3 {
+            color: #333;
+            ;
+        }
+
+        .billing-section p,
+        .shipping-section p,
+        .bill-details p {
+            margin: -2px 0;
+            color: #555;
+        }
+
+        .bill-title {
+            background-color: black;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            position: relative;
+            top: -13px;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bill">
+        <div style="margin-bottom:-22px; width:100%; background-color:#f2f2f2;">
+        </div>
+        <div class="company-details">
+            <div class="logo">
+                <!-- Replace the image source with your company logo -->
+                <img src="{% static 'img/bill_logo.jpg' %}" alt="Company Logo" style="width: 200px;">
+            </div>
+            <div class="info">
+                <h1>Patel Transport</h1>
+                <p style=""><b>Address :</b>Vaijapur-Gangapur Road, Vaijapur, Dist. Aurangabad, Maharashtra, India</p>
+                <p style="margin-top:-10px;"><b>Email ID:</b> company_email@gmail.com</p>
+                <p style="margin-top:-10px;"><b>Contact Details:</b> Mobile : +91 7757868445</p>
+            </div>
+        </div>
+        <div class="bill_details">
+            <center>
+                <span class="bill-title">Bill</span>
+            </center>
+            <table class="bill-table">
+                <tbody>
+                    <tr>
+                        <th style="width: 150px;">Bill Number</th>
+                        <td><b style="color:red;">{{ bill.bill_number }}</b></td>
+                        <th>Date</th>
+                        <td>
+                            {{ bill.updated_at }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th style="width: 150px;">Vehicle Number</th>
+                        <td>{{ bill.vehicle.vehicle_number }} </td>
+                        <th style="width: 150px;">Vehicle Name</th>
+                        <td>{% if bill.vehicle.vehicle_name %}{{ bill.vehicle.vehicle_name }} {% else %} --- {% endif %}  </td>    
+                    </tr>
+                    <tr>
+                        <th style="width: 150px;">Vechicle Owner Name</th>
+                        <td>{% if bill.vehicle.owner.owner_name %}{{ bill.vehicle.owner.owner_name }} {% else %} --- {% endif %}</td>
+                        <th>Owner Contact</th>
+                        <td>{% if bill.vehicle.owner.owner_mobile_number %}{{ bill.vehicle.owner.owner_mobile_number }} {% else %} --- {% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th style="width: 150px;">Driver Name</th>
+                        <td>{% if bill.driver.driver_name %}{{ bill.driver.driver_name }} {% else %} --- {% endif %}</td>
+                        <th>Driver Contact</th>
+                        <td>{% if bill.driver.mobile %}{{ bill.driver.mobile }} {% else %} --- {% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th style="width: 150px;">Driver Licence</th>
+                        <td colspan="3">{% if bill.driver.licence_number %}{{ bill.driver.licence_number }} {% else %} --- {% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th style="width: 150px;">Reference</th>
+                        <td>{% if bill.reference.owner_name %}{{ bill.reference.owner_name }} {% else %} --- {% endif %}</td>
+                        <th>Reference Contact</th>
+                        <td>{% if bill.reference.owner_mobile_number %}{{ bill.reference.owner_mobile_number }} {% else %} --- {% endif %}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        
+        <hr style="border:2px solid white;">
+
+        <table class="bill-table" border="1" style="width:100%;">
+            <thead>
+                <tr><b>
+                    <th style="text-align:center;" rowspan="2" style="width:10%">From Location</th>
+                    <th style="text-align:center;" rowspan="2" style="width:30%">To Location</th> 
+                </b></tr> 
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align:center;">{{bill.from_location}}</td>
+                    <td style="text-align:center;"> {{bill.to_location}}</td> 
+                </tr>
+            </tbody>
+        </table>
+
+        <hr style="border:2px solid white;">
+         
+        <table class="bill-table">
+            <tbody> 
+                <tr>
+                    <th style="width: 150px;">Material Type</th>
+                    <td colspan="3">{% if bill.material_type %}{{ bill.material_type }} {% else %} --- {% endif %}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="display:flex; flex-direction:row;">
+            <div style="width:60%; margin-top: 70px; margin-left: 20px;margin-Right: 30px;">
+                    <div class="">
+                         <table style="width:100%">
+                            <tr>
+                                <td style="border-top:1px solid black; text-align: center; border-left:15px solid white;border-right:15px solid white; width:20px" >Vehicle Owner Sign</td>
+                                <td style="border-top:1px solid black; text-align: center; border-left:15px solid white;border-right:15px solid white; width:20px" >Patel Transport Sign</td>
+                            </tr>
+                         </table>
+                </div>
+            </div>
+    
+            <div style="width:40%;">
+                <table class="bill-table" border="1" style="width:100%;">
+                    <tbody>
+                        <tr>
+                            <td style="text-align:left;">Rent : </td>
+                            <td style="text-align:left;"><b>&#8377;  {{ bill.rent_amount }}.00</b></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align:left;">Advance : </td>
+                            <td style="text-align:left;"><b>&#8377;  {{ bill.advance_amount }}.00</b></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align:left;">Pending : </td>
+                            <td style="text-align:left;"><b>&#8377;  {{ bill.pending_amount }}.00</b></td>
+                        </tr>  
+                    </tbody>
+                </table> 
+            </div>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+        </div>
+    </div>
+    
+
+ 
+</body>
+
+</html>

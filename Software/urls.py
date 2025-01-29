@@ -33,5 +33,6 @@ urlpatterns = [
     path('update_bill/<int:id>', update_bill, name='software_update_bill'),
     path('delete_bill/<int:id>', delete_bill, name='software_delete_bill'),
     path('get_owner_details/', get_owner_details, name='software_get_owner_details'),
+    path('print_bill/<int:id>', print_bill, name='software_print_bill'),
     
 ]+static(settings.STATIC_URL,document_root=settings.MEDIA_ROOT) 

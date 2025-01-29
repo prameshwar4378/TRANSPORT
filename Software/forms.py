@@ -251,6 +251,12 @@ class BillForm(forms.ModelForm):
                 raise forms.ValidationError("Advance amount cannot be greater than rent amount.")
         return cleaned_data
 
+    def clean_vehicle(self):
+        vehicle = self.cleaned_data.get('vehicle')
+        if ' ' in vehicle:
+            raise ValidationError("Spaces are not allowed in the Vehicle field.")
+        return vehicle
+    
     # Custom validation for driver field
     def clean_driver(self):
         name_pattern = r"^[A-Za-z ]+$"  # Matches names with alphabets and spaces

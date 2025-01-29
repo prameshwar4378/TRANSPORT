@@ -298,25 +298,11 @@ def create_bill(request):
                 vehicle = Vehicle.objects.filter(vehicle_number=vehicle_number).first()
                 if not vehicle:
                     vehicle=Vehicle.objects.create(vehicle_number=vehicle_number)
+ 
 
-                # Create Owner Record
-                # owner = request.POST.get('owner')  
-                # if owner:
-                #     if '-' in owner:
-                #         owner = str(owner).strip()
-                #         parts = owner.split(' - ', 1)
-                #         name, mobile_number = parts
-                #         name = name.strip()
-                #         mobile_number = mobile_number.strip() 
-                #         owner, created = VehicleOwner.objects.get_or_create(owner_name=name, owner_mobile_number=mobile_number)
-                #     else:
-                #         owner = None
-
-
-                # Create Driver Record
+                # Create owner Record
                 owner = request.POST.get('owner')  
                 if owner:
-                    print("owner data found")
                     try:
                         if '-' in owner:
                             owner = str(owner).strip()
@@ -334,12 +320,10 @@ def create_bill(request):
                         owner = None
                 else:
                     owner = None
-                    print("owner NO data found")
 
                 # Create Driver Record
                 driver = request.POST.get('driver')  
                 if driver:
-                    print("Driver data found")
                     try:
                         if '-' in driver:
                             driver = str(driver).strip()
@@ -357,13 +341,11 @@ def create_bill(request):
                         driver = None
                 else:
                     driver = None
-                    print("Driver NO data found")
 
 
                 # Create Party Record
                 party = request.POST.get('party')  
                 if party:
-                    print("Party data found")
                     try:
                         if '-' in party:
                             party = str(party).strip()
@@ -381,13 +363,11 @@ def create_bill(request):
                         party = None
                 else:
                     party = None
-                    print("Party NO data found")
 
 
                 # Create Reference Record
                 reference = request.POST.get('reference')  
                 if reference:
-                    print("reference data found")
                     try:
                         if '-' in reference:
                             reference = str(reference).strip()
@@ -406,7 +386,6 @@ def create_bill(request):
                         reference = None
                 else:
                     reference = None
-                    print("reference NO data found")
 
 
 
@@ -480,4 +459,12 @@ def delete_bill(request, id):
         bill.delete()
         messages.success(request, 'Bill deleted successfully.')
     return redirect('/software/bill_list')
+
+
+
+
+def print_bill(request, id):
+    bill = get_object_or_404(Bill, id=id) 
+    return render(request, 'software_print_bill.html', {'bill':bill})
+
 

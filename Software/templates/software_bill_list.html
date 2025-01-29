@@ -68,7 +68,7 @@
                                          
                                         <td>
                                             <center>
-                                                <a href=""class="btn btn-primary px-2"><i class="bi bi-printer"></i></a>
+                                                <a href="{% url "software_print_bill" r.id %}" class="btn btn-primary px-2"><i class="bi bi-printer"></i></a>
                                                 <a href="javascript:void(0);" data-url="{% url 'software_update_bill' r.id %}" class="btn btn-warning px-2" onclick="mini_window(this)"><i class="bi bi-pencil-square"></i></a>
                                                 <a href="{% url 'software_delete_bill' r.id %}" class="btn btn-danger px-2 " onclick="confirmDelete(this); return false;"><i class="bi bi-trash3"></i></a>
                                             </center>
