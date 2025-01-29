@@ -24,7 +24,6 @@ def create_owner(request):
         form = OwnerForm(request.POST, request.FILES)
         if form.is_valid():
             try:
-                print(request.user.business.id)
                 with transaction.atomic():
                     fm=form.save(commit=False)
                     fm.business = request.user.business
@@ -293,57 +292,171 @@ def create_bill(request):
             try:
                 name_pattern = r"^[A-Za-z ]+$"
                 phone_pattern = r"^\d{10}$"
-
+                
+                #Create Vehicle Record
                 vehicle_number=request.POST.get('vehicle') 
                 vehicle = Vehicle.objects.filter(vehicle_number=vehicle_number).first()
                 if not vehicle:
                     vehicle=Vehicle.objects.create(vehicle_number=vehicle_number)
 
-                driver=request.POST.get('driver') 
+                # Create Owner Record
+                # owner = request.POST.get('owner')  
+                # if owner:
+                #     if '-' in owner:
+                #         owner = str(owner).strip()
+                #         parts = owner.split(' - ', 1)
+                #         name, mobile_number = parts
+                #         name = name.strip()
+                #         mobile_number = mobile_number.strip() 
+                #         owner, created = VehicleOwner.objects.get_or_create(owner_name=name, owner_mobile_number=mobile_number)
+                #     else:
+                #         owner = None
+
+
+                # Create Driver Record
+                owner = request.POST.get('owner')  
+                if owner:
+                    print("owner data found")
+                    try:
+                        if '-' in owner:
+                            owner = str(owner).strip()
+                            parts = owner.split(' - ', 1)
+                            name, mobile_number = parts
+                            name = name.strip()
+                            mobile_number = mobile_number.strip() 
+                            # Check or create driver record
+                            owner, created = VehicleOwner.objects.get_or_create(owner_name=name, owner_mobile_number=mobile_number)
+                        else:
+                            owner = None
+                    except Exception as e:
+                        # Log the error or handle it as needed
+                        print(f"Error while creating or retrieving the owner: {e}")
+                        owner = None
+                else:
+                    owner = None
+                    print("owner NO data found")
+
+                # Create Driver Record
+                driver = request.POST.get('driver')  
                 if driver:
-                    if '-' in driver:
-                        name, mobile_number = driver.split(' - ')
-                        if re.match(name_pattern, name.strip()) and re.match(phone_pattern, mobile_number.strip()):
-                            name_var = name.strip()
-                            mobile_number_var = mobile_number.strip()
-                            print("Name is = ",name_var)
-                            print("mobile_number_var is = ", mobile_number_var) 
-                    else:
-                        driver = driver.strip()
-                        if re.match(name_pattern, driver):
-                            print("Only name are present = ",driver)
-                        elif re.match(phone_pattern, driver):
-                            print("Only mobile number is present = ",driver)
- 
+                    print("Driver data found")
+                    try:
+                        if '-' in driver:
+                            driver = str(driver).strip()
+                            parts = driver.split(' - ', 1)
+                            name, mobile_number = parts
+                            name = name.strip()
+                            mobile_number = mobile_number.strip() 
+                            # Check or create driver record
+                            driver, created = Driver.objects.get_or_create(driver_name=name, mobile=mobile_number)
+                        else:
+                            driver = None
+                    except Exception as e:
+                        # Log the error or handle it as needed
+                        print(f"Error while creating or retrieving the driver: {e}")
+                        driver = None
+                else:
+                    driver = None
+                    print("Driver NO data found")
+
+
+                # Create Party Record
+                party = request.POST.get('party')  
+                if party:
+                    print("Party data found")
+                    try:
+                        if '-' in party:
+                            party = str(party).strip()
+                            parts = party.split(' - ', 1)
+                            name, mobile_number = parts
+                            name = name.strip()
+                            mobile_number = mobile_number.strip() 
+                            # Check or create driver record
+                            party, created = Party.objects.get_or_create(name=name, mobile=mobile_number)
+                        else:
+                            party = None
+                    except Exception as e:
+                        # Log the error or handle it as needed
+                        print(f"Error while creating or retrieving the party: {e}")
+                        party = None
+                else:
+                    party = None
+                    print("Party NO data found")
+
+
+                # Create Reference Record
+                reference = request.POST.get('reference')  
+                if reference:
+                    print("reference data found")
+                    try:
+                        if '-' in reference:
+                            reference = str(reference).strip()
+                            parts = reference.split(' - ', 1)
+                            name, mobile_number = parts
+                            name = name.strip()
+                            mobile_number = mobile_number.strip() 
+                            # Check or create driver record
+                            reference, created = VehicleOwner.objects.get_or_create(owner_name=name, owner_mobile_number=mobile_number)
+                        else:
+                            reference = None
+
+                    except Exception as e:
+                        # Log the error or handle it as needed
+                        print(f"Error while creating or retrieving the reference: {e}")
+                        reference = None
+                else:
+                    reference = None
+                    print("reference NO data found")
+
+
+
                 with transaction.atomic():
                     fm=form.save(commit=False)
                     fm.business = request.user.business
                     fm.vehicle = vehicle
+                    if owner:
+                        fm.owner=owner
+                    if driver:
+                        fm.driver=driver
+                    if reference:
+                        fm.reference=reference
                     fm.save()
                     messages.success(request, 'Bill created successfully')
                     return JsonResponse({'success': True, 'message': 'Bill created successfully!'})
             except ValidationError as e:
-                print(e)
-                # Handle explicit model-level validation errors
                 return JsonResponse({'success': False, 'errors': {'non_field_errors': str(e)}}, status=400)
             except Exception as e:
-                print(e)
-                # Catch any unexpected errors and return a 500 response
                 return JsonResponse({'success': False, 'message': str(e)}, status=500)
         else:
-            # Handle form errors
             errors = {
                 field: [str(error) for error in error_list]
                 for field, error_list in form.errors.items()
             }
             return JsonResponse({'success': False, 'errors': errors}, status=400)
-    # If the request method is not POST, return a method not allowed response
     return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
 
 
+def get_owner_details(request):
+    vehicle_number = request.GET.get('vehicle', '') 
+    vehicle=None
+    if vehicle_number:
+        vehicle = Vehicle.objects.filter(vehicle_number=vehicle_number).first()
+        if vehicle:
+            name = vehicle.owner.owner_name
+            mobile= vehicle.owner.owner_mobile_number
+            owner_data=f"{name} - {mobile}" 
+ 
+    if vehicle:
+        data = {
+            'owner_data': owner_data, 
+        }
+        return JsonResponse(data)
+    else:
+        return JsonResponse({'error': 'Owner not found'})
+    
+
 def update_bill(request, id):
     bill = get_object_or_404(Bill, id=id)  # Safely retrieve the Driver instance or return a 404 error
-    print(bill)
     if request.method == 'POST':
         form = BillUpdateForm(request.POST, request.FILES, instance=bill)  # Populate the form with the instance data
         if form.is_valid():

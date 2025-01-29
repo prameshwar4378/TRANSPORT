@@ -65,7 +65,7 @@ class Party(models.Model):
     document1 = models.FileField(upload_to='party_documents/other_documents/', null=True, blank=True)
     document2 = models.FileField(upload_to='party_documents/other_documents/', null=True, blank=True)
 
-    mobile = models.CharField(max_length=15, unique=True, null=True, blank=True)
+    mobile = models.CharField(max_length=15, null=True, blank=True)
     alternate_mobile = models.CharField(max_length=15, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -84,7 +84,7 @@ class Driver(models.Model):
     document2 = models.FileField(upload_to='party_documents/other_documents/', null=True, blank=True)
     profile_photo = models.ImageField(upload_to='driver_documents/profile_photos/', null=True, blank=True)
 
-    mobile = models.CharField(max_length=15, unique=True, null=True, blank=True)
+    mobile = models.CharField(max_length=15, null=True, blank=True)
     alternate_mobile = models.CharField(max_length=15, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -118,7 +118,7 @@ class Bill(models.Model):
         'Vehicle', on_delete=models.CASCADE,  related_name='bills', verbose_name="Vehicle"
     )
 
-    referece = models.ForeignKey(
+    reference = models.ForeignKey(
         'VehicleOwner', on_delete=models.SET_NULL, null=True, blank=True, related_name='referenced_bills', verbose_name="Referenced Owner"
     )
     

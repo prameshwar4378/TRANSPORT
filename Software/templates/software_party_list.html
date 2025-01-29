@@ -43,6 +43,7 @@
                                     <tr style="background-color: rgb(56, 79, 90);"> 
                                         <th scope="col" class="text-center text-white">Sr. No</th>
                                         <th scope="col" class="text-center text-white">Party Name</th>
+                                        <th scope="col" class="text-center text-white">Mobile Number</th>
                                         <th scope="col" class="text-center text-white">GST</th>
                                         <th scope="col" class="text-center text-white">PAN Card</th>
                                         <th scope="col" class="text-center text-white">Adhar Card</th>
@@ -57,6 +58,7 @@
                                     <tr>
                                         <td class="text-center">{{ forloop.counter }}</td>
                                         <td class="text-left">{{ r.name|default_if_none:"----" }} </td>
+                                        <td class="text-left">{{ r.mobile|default_if_none:"----"}} </td>
                                         <td class="text-left">{{ r.gst_no|default_if_none:"----"}} </td>
                                         <td class="text-left">{% if r.pan_card %}  <a href="/media/{{r.pan_card }}" download>download</a> {% else %} ---- {% endif %}</td>
                                         <td class="text-left">{% if r.adhar_card %}  <a href="/media/{{r.adhar_card }}" download>download</a> {% else %} ---- {% endif %}</td>

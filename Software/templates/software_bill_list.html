@@ -48,6 +48,7 @@
                                         <th scope="col" class="text-center text-white">Vehicle Number</th>
                                         <th scope="col" class="text-center text-white">Owner Name</th>
                                         <th scope="col" class="text-center text-white">Driver Name</th>
+                                        <th scope="col" class="text-center text-white">Reference</th>
                                         <th scope="col" class="text-center text-white">Rent Pending</th>
                                         <th scope="col" class="text-center text-white">Commission</th>
                                         <th scope="col" class="text-center text-white">Action</th>
@@ -61,13 +62,15 @@
                                         <td class="text-center">{{ r.vehicle.vehicle_number }} </td>
                                         <td class="text-center">{{ r.vehicle.owner.owner_name }} </td>
                                         <td class="text-center">{{ r.driver.driver_name }} </td>
+                                        <td class="text-center">{{ r.reference.owner_name }} </td>
                                         <td class="text-center">{{ r.pending_amount }} </td>
                                         <td class="text-center">{{ r.commission }} </td>
                                          
                                         <td>
                                             <center>
-                                                <a href="javascript:void(0);" data-url="{% url 'software_update_bill' r.id %}" class="btn btn-warning px-3" onclick="mini_window(this)">Update</a>
-                                                <a href="{% url 'software_delete_bill' r.id %}" class="btn btn-danger px-2 py-2" onclick="confirmDelete(this); return false;">Delete</a>
+                                                <a href=""class="btn btn-primary px-2"><i class="bi bi-printer"></i></a>
+                                                <a href="javascript:void(0);" data-url="{% url 'software_update_bill' r.id %}" class="btn btn-warning px-2" onclick="mini_window(this)"><i class="bi bi-pencil-square"></i></a>
+                                                <a href="{% url 'software_delete_bill' r.id %}" class="btn btn-danger px-2 " onclick="confirmDelete(this); return false;"><i class="bi bi-trash3"></i></a>
                                             </center>
                                         </td>
                                     </tr>
@@ -110,9 +113,10 @@
                     {% csrf_token %}
     
                     <div class="row"> 
+                    
                         <div class="col-sm-6 mb-2 mt-2">
                             <label for="vehicle">Vehicle: <span style="color: #b8c49d;">(MH20PQ1446)</span></label>
-                            <input list="vehicledata" class="form-control mt-2" name="vehicle" id="vehicle">
+                            <input list="vehicledata" class="form-control mt-2" name="vehicle" id="vehicle" oninput="get_owner_details()">
                             <datalist id="vehicledata">
                                 {% if vehicle_rec %}
                                     {% for i in vehicle_rec %}
@@ -172,28 +176,33 @@
                             </datalist>
                         </div> 
                         
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             {{ bill_form.from_location|as_crispy_field }}
                         </div>
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             {{ bill_form.to_location|as_crispy_field }}
                         </div>
-                        <div class="col-sm-12">
+                        <div class="col-sm-4">
                             {{ bill_form.material_type|as_crispy_field }}
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                             {{ bill_form.rent_amount|as_crispy_field }}
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                             {{ bill_form.advance_amount|as_crispy_field }}
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                             {{ bill_form.pending_amount|as_crispy_field }}
                         </div>
-                        <div class="col-sm-3">
+                        <div class="col-sm-4">
                             {{ bill_form.commission|as_crispy_field }}
                         </div>
-                        <div class="col-sm-12">
+                        <div class="col-sm-4 mb-2 ">
+                            <label for="reference">Reference: <span style="color: #b8c49d;">(name - 88888888888)</span></label>
+                            <input list="ownerdata" class="form-control mt-2" name="reference" id="reference">
+                        </div> 
+                        
+                        <div class="col-sm-4">
                             {{ bill_form.notes|as_crispy_field }}
                         </div>
                     </div>
@@ -286,21 +295,23 @@
   </script>
 
 
-  {% comment %} <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const dropdownIds = ['id_owner','id_party','id_driver','id_vehicle' ];
-        dropdownIds.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                new Choices(element, {
-                    searchEnabled: true,
-                    itemSelectText: '',
-                    noResultsText: 'No matching results',
-                });
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    function get_owner_details() {
+        var vehicle = $('#vehicle').val(); // Obtain the product code from the input field
+        $.ajax({
+            url: '/software/get_owner_details/',  // Replace with your actual endpoint
+            data: {'vehicle': vehicle},
+            type: 'GET',
+            success: function (data) {
+                $('#owner').val(data.owner_data); 
+            },
+            error: function (error) { 
             }
         });
-    });
-</script> {% endcomment %}
+    }
+</script>
 
 
 <script>
@@ -342,8 +353,8 @@
         const url = element.dataset.url;
         var screenWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
         var screenHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-        var newWidth = screenWidth * 0.9;  // 90% of the screen width
-        var newHeight = screenHeight * 0.9;  // 90% of the screen height
+        var newWidth = screenWidth * 0.7;  // 90% of the screen width
+        var newHeight = screenHeight * 0.8;  // 90% of the screen height
         var left = (screenWidth - newWidth) / 2;
         var top = (screenHeight - newHeight) / 2;
         var windowFeatures = `width=${newWidth},height=${newHeight},scrollbars=yes,resizable=yes,top=${top},left=${left}`;

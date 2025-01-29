@@ -221,6 +221,13 @@ class BillForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'class': 'form-control', 'list': 'partydata'})
     )
     
+    reference = forms.CharField(
+        max_length=255,
+        label="Reference",
+        required=False, 
+        widget=forms.TextInput(attrs={'class': 'form-control', 'list': 'ownerdata'})
+    )
+    
     class Meta:
         model = Bill
         fields = [
@@ -229,6 +236,7 @@ class BillForm(forms.ModelForm):
         ]
 
         widgets = {
+            'vehicle': forms.TextInput(attrs={'onkeyup': 'get_owner_details()'}),
             'rent_amount': forms.TextInput(attrs={'oninput': 'calculate_pending_amount()'}),
             'advance_amount': forms.TextInput(attrs={'oninput': 'calculate_pending_amount()'}),
             'notes': forms.TextInput(attrs={'row': 3}),
@@ -300,12 +308,43 @@ class BillForm(forms.ModelForm):
                     raise forms.ValidationError("Invalid owner mobile number format. Ensure it's exactly 10 digits.")
             else:
                 raise forms.ValidationError("Invalid owner data format. Should be 'Name - Mobile Number'.")
-
         
         return owner
     
 
 
+    # Custom validation for reference field
+    def clean_reference(self):
+        name_pattern = r"^[A-Za-z ]+$"  # Matches names with alphabets and spaces
+        phone_pattern = r"^\d{10}$"  # Matches a 10-digit mobile number
+
+        reference = self.cleaned_data.get('reference')  # Data format can be: "Suresh Jadhav - 8888888888", "Suresh Jadhav", "8888888888", etc.
+        reference = str(reference).strip()
+
+        if reference:
+            if '-' in reference:
+                # Split the input into name and mobile number
+                parts = reference.split(' - ', 1)
+                
+                if len(parts) != 2:
+                    raise forms.ValidationError("Invalid reference data format. Should be 'Name - Mobile Number'.")
+                
+                name, mobile_number = parts
+                name = name.strip()
+                mobile_number = mobile_number.strip()
+                if not name:
+                    raise forms.ValidationError("Invalid reference data format. Should be 'Name - Mobile Number")                
+                # Validate name and mobile number separately
+                if not re.match(name_pattern, name):
+                    raise forms.ValidationError("Invalid reference name format.")
+                if not re.match(phone_pattern, mobile_number):
+                    raise forms.ValidationError("Invalid reference mobile number format. Ensure it's exactly 10 digits.")
+            else:
+                raise forms.ValidationError("Invalid reference data format. Should be 'Name - Mobile Number'.")
+        
+        return reference
+    
+    
     # Custom validation for party field
     def clean_party(self):
         name_pattern = r"^[A-Za-z ]+$"  # Matches names with alphabets and spaces
@@ -343,8 +382,6 @@ class BillForm(forms.ModelForm):
     
     
 class BillUpdateForm(forms.ModelForm):
- 
-    
     class Meta:
         model = Bill
         fields = [
