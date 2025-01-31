@@ -40,21 +40,31 @@
                                         {{ form.material_type|as_crispy_field }}
                                     </div>
                                     
-                                    <div class="col-sm-3">
+                                    <div class="col-sm-4">
                                         {{ form.rent_amount|as_crispy_field }}
                                     </div>
-                                    <div class="col-sm-3">
+                                    <div class="col-sm-4">
                                         {{ form.advance_amount|as_crispy_field }}
                                     </div>
-                                    <div class="col-sm-3">
+                                    <div class="col-sm-4">
                                         {{ form.pending_amount|as_crispy_field }}
                                     </div>
-                                    <div class="col-sm-3">
-                                        {{ form.commission|as_crispy_field }}
+                                    <div class="col-sm-4">
+                                        {{ form.commission_charge|as_crispy_field }}
                                     </div>
-                                    <div class="col-sm-12">
+                                    <div class="col-sm-4">
+                                        {{ form.commission_received|as_crispy_field }}
+                                    </div>
+                                    <div class="col-sm-4">
+                                        {{ form.commission_pending|as_crispy_field }}
+                                    </div> 
+                                    <div class="col-sm-6">
+                                        {{ form.reference|as_crispy_field }}
+                                    </div> 
+                                    <div class="col-sm-6">
                                         {{ form.notes|as_crispy_field }}
                                     </div>
+
                                 </div>
                                 
                             </div>
@@ -71,7 +81,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const dropdownIds = ['id_party','id_driver','id_vehicle' ];
+        const dropdownIds = ['id_party','id_driver','id_vehicle','id_reference' ];
         dropdownIds.forEach(id => {
             const element = document.getElementById(id);
             if (element) {

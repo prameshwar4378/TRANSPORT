@@ -232,16 +232,17 @@ class BillForm(forms.ModelForm):
         model = Bill
         fields = [
             'from_location', 'to_location', 'material_type', 'rent_amount', 'advance_amount',
-            'pending_amount', 'commission', 'notes'
+            'pending_amount', 'commission_charge', 'commission_received', 'commission_pending', 'notes'
         ]
-
         widgets = {
             'vehicle': forms.TextInput(attrs={'onkeyup': 'get_owner_details()'}),
             'rent_amount': forms.TextInput(attrs={'oninput': 'calculate_pending_amount()'}),
             'advance_amount': forms.TextInput(attrs={'oninput': 'calculate_pending_amount()'}),
+            'commission_charge': forms.TextInput(attrs={'oninput': 'calculate_commission_pending()'}),
+            'commission_received': forms.TextInput(attrs={'oninput': 'calculate_commission_pending()'}),
             'notes': forms.TextInput(attrs={'row': 3}),
         }
-    # Custom Validation
+ 
     def clean(self):
         cleaned_data = super().clean()
         rent_amount = cleaned_data.get('rent_amount')
@@ -392,15 +393,17 @@ class BillUpdateForm(forms.ModelForm):
         model = Bill
         fields = [
             'vehicle','driver','party','from_location', 'to_location', 'material_type', 'rent_amount', 'advance_amount',
-            'pending_amount', 'commission', 'notes'
+            'pending_amount', 'commission_charge', 'commission_received', 'commission_pending', 'notes', 'reference'
         ]
 
         widgets = {
             'rent_amount': forms.TextInput(attrs={'oninput': 'calculate_pending_amount()'}),
             'advance_amount': forms.TextInput(attrs={'oninput': 'calculate_pending_amount()'}),
+            'commission_charge': forms.TextInput(attrs={'oninput': 'calculate_commission_pending()'}),
+            'commission_received': forms.TextInput(attrs={'oninput': 'calculate_commission_pending()'}),
             'notes': forms.TextInput(attrs={'row': 3}),
         }
-    # Custom Validation
+
     def clean(self):
         cleaned_data = super().clean()
         rent_amount = cleaned_data.get('rent_amount')
@@ -408,6 +411,5 @@ class BillUpdateForm(forms.ModelForm):
         if advance_amount is not None and rent_amount is not None:
             if advance_amount > rent_amount:
                 raise forms.ValidationError("Advance amount cannot be greater than rent amount.")
-
         return cleaned_data
      

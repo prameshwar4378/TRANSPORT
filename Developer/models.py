@@ -129,6 +129,9 @@ class Bill(models.Model):
     advance_amount = models.DecimalField(max_digits=10, decimal_places=0, verbose_name="Advance Amount")
     pending_amount = models.DecimalField(max_digits=10, decimal_places=0, default=0, verbose_name="Pending Amount")
     commission = models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True,default=0,  verbose_name="Commission")
+    commission_charge = models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True,default=0,  verbose_name="Commission Amount")
+    commission_received = models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True,default=0,  verbose_name="Commission Received")
+    commission_pending = models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True,default=0,  verbose_name="Commission Pending")
     
     notes = models.TextField(null=True, blank=True, verbose_name="Additional Notes")
 
@@ -156,9 +159,6 @@ class Bill(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        """
-        Generate the bill number automatically if it’s a new record.
-        """
         if not self.bill_number:
             last_bill = Bill.objects.order_by('id').last()
             if last_bill:

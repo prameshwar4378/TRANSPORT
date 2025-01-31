@@ -6,7 +6,7 @@
     #id_commission{
         background-color: #cfffc1;
     }
-#id_pending_amount{
+#id_pending_amount, #id_commission_pending{
     background-color: #f3f3f3;
 }
 </style>
@@ -52,7 +52,7 @@
                                         <th scope="col" class="text-center text-white">Driver Name</th>
                                         <th scope="col" class="text-center text-white">Reference</th>
                                         <th scope="col" class="text-center text-white">Rent Pending</th>
-                                        <th scope="col" class="text-center text-white">Commission</th>
+                                        <th scope="col" class="text-center text-white">Commission Pending</th>
                                         <th scope="col" class="text-center text-white">Action</th>
                                     </tr>
                                 </thead>
@@ -66,7 +66,7 @@
                                         <td class="text-center">{{ r.driver.driver_name }} </td>
                                         <td class="text-center">{{ r.reference.owner_name }} </td>
                                         <td class="text-center">{{ r.pending_amount }} </td>
-                                        <td class="text-center">{{ r.commission }} </td>
+                                        <td class="text-center">{{ r.commission_pending }} </td>
                                          
                                         <td>
                                             <center>
@@ -210,15 +210,21 @@
                         <div class="col-sm-4">
                             {{ bill_form.pending_amount|as_crispy_field }}
                         </div>
-                        <div class="col-sm-4">
-                            {{ bill_form.commission|as_crispy_field }}
+                        <div class="col-sm-2">
+                            {{ bill_form.commission_charge|as_crispy_field }}
                         </div>
-                        <div class="col-sm-4 mb-2 ">
+                        <div class="col-sm-2">
+                            {{ bill_form.commission_received|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-2">
+                            {{ bill_form.commission_pending|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-6 mb-2 ">
                             <label for="reference">Reference: <span style="color: #b8c49d;">(name - 88888888888)</span></label>
                             <input list="ownerdata" class="form-control mt-2" name="reference" id="reference">
                         </div> 
                         
-                        <div class="col-sm-4">
+                        <div class="col-sm-12">
                             {{ bill_form.notes|as_crispy_field }}
                         </div>
                     </div>
@@ -424,6 +430,9 @@ aria-hidden="true">
 </script>
 
 <script>
+    document.getElementById("id_commission_charge").value=700;
+    document.getElementById("id_commission_pending").value=700;
+
     function calculate_pending_amount() {
         // Get references to the input fields
         const rentInput = document.getElementById("id_rent_amount");
@@ -437,6 +446,22 @@ aria-hidden="true">
         // Directly set the pending amount field without extra calculations
         pendingInput.value = rentAmount >= advanceAmount ? rentAmount - advanceAmount : 0;
     }
+
+    
+    function calculate_commission_pending() {
+        // Get references to the input fields
+        const commission_charge = document.getElementById("id_commission_charge");
+        const commission_received = document.getElementById("id_commission_received");
+        const commission_pending = document.getElementById("id_commission_pending");
+
+        // Parse the values and default to 0 if empty or invalid
+        const Commission_Amt = parseFloat(commission_charge.value) || 0;
+        const Commission_Received = parseFloat(commission_received.value) || 0;
+
+        // Directly set the pending amount field without extra calculations
+        commission_pending.value = Commission_Amt >= Commission_Received ? Commission_Amt - Commission_Received : 0;
+    }
+    
 </script>
 <script>
     
