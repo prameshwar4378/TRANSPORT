@@ -3,7 +3,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static 
 from .views import *
-
+from .export import *
 urlpatterns = [
     path('dashboard/', dashboard, name='software_dashboard'), 
 
@@ -34,5 +34,11 @@ urlpatterns = [
     path('delete_bill/<int:id>', delete_bill, name='software_delete_bill'),
     path('get_owner_details/', get_owner_details, name='software_get_owner_details'),
     path('print_bill/<int:id>', print_bill, name='software_print_bill'),
+
+    path('get_driver_profile_status/', get_driver_profile_status, name='software_get_driver_profile_status'),
+    path('get_party_profile_status/', get_party_profile_status, name='software_get_party_profile_status'),
+    path('get_vehicle_owner_profile_status/', get_vehicle_owner_profile_status, name='software_get_vehicle_owner_profile_status'),
     
+    path('export_filtered_bill_records/', export_filtered_bill_records, name='software_export_filtered_bill_records'),
+ 
 ]+static(settings.STATIC_URL,document_root=settings.MEDIA_ROOT) 

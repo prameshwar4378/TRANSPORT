@@ -232,7 +232,7 @@ class BillForm(forms.ModelForm):
         model = Bill
         fields = [
             'from_location', 'to_location', 'material_type', 'rent_amount', 'advance_amount',
-            'pending_amount', 'commission_charge', 'commission_received', 'commission_pending', 'notes'
+            'pending_amount', 'commission_charge', 'commission_received', 'commission_pending', 'notes','commission_received_date','bill_date'
         ]
         widgets = {
             'vehicle': forms.TextInput(attrs={'onkeyup': 'get_owner_details()'}),
@@ -241,6 +241,8 @@ class BillForm(forms.ModelForm):
             'commission_charge': forms.TextInput(attrs={'oninput': 'calculate_commission_pending()'}),
             'commission_received': forms.TextInput(attrs={'oninput': 'calculate_commission_pending()'}),
             'notes': forms.TextInput(attrs={'row': 3}),
+            'commission_received_date': forms.TextInput(attrs={'type': 'date' }),
+            'bill_date': forms.TextInput(attrs={'type': 'date' })
         }
  
     def clean(self):
@@ -393,15 +395,19 @@ class BillUpdateForm(forms.ModelForm):
         model = Bill
         fields = [
             'vehicle','driver','party','from_location', 'to_location', 'material_type', 'rent_amount', 'advance_amount',
-            'pending_amount', 'commission_charge', 'commission_received', 'commission_pending', 'notes', 'reference'
+            'pending_amount', 'commission_charge', 'commission_received', 'commission_pending', 'notes', 'reference','commission_received_date','bill_date'
         ]
 
         widgets = {
             'rent_amount': forms.TextInput(attrs={'oninput': 'calculate_pending_amount()'}),
             'advance_amount': forms.TextInput(attrs={'oninput': 'calculate_pending_amount()'}),
+            'pending_amount': forms.TextInput(attrs={'oninput': 'calculate_commission_pending()','readonly':True}),
             'commission_charge': forms.TextInput(attrs={'oninput': 'calculate_commission_pending()'}),
             'commission_received': forms.TextInput(attrs={'oninput': 'calculate_commission_pending()'}),
+            'commission_pending': forms.TextInput(attrs={'oninput': 'calculate_commission_pending()','readonly':True}),
             'notes': forms.TextInput(attrs={'row': 3}),
+            'commission_received_date': forms.TextInput(attrs={'type': 'date' }),
+            'bill_date': forms.TextInput(attrs={'type': 'date' })
         }
 
     def clean(self):

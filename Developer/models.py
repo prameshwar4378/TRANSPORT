@@ -119,7 +119,7 @@ class Bill(models.Model):
     )
 
     reference = models.ForeignKey(
-        'VehicleOwner', on_delete=models.SET_NULL, null=True, blank=True, related_name='referenced_bills', verbose_name="Referenced Owner"
+        'VehicleOwner', on_delete=models.SET_NULL, null=True, blank=True, related_name='referenced_bills', verbose_name="Referenced By"
     )
     
     from_location = models.CharField(max_length=255, verbose_name="From Location")
@@ -134,14 +134,14 @@ class Bill(models.Model):
     commission_pending = models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True,default=0,  verbose_name="Commission Pending")
     
     notes = models.TextField(null=True, blank=True, verbose_name="Additional Notes")
-
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
+ 
+    bill_date = models.DateField(verbose_name="Bill Date")
+    commission_received_date = models.DateField(null=True, blank=True, verbose_name="Commission Received Date")
 
     class Meta:
         verbose_name = "Bill"
         verbose_name_plural = "Bills"
-        ordering = ['-created_at']
+        ordering = ['-bill_date']
 
     def __str__(self):
         if self.bill_number and self.party:

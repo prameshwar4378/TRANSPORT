@@ -134,7 +134,7 @@
             </div>
             <div class="info">
                 <h1>Patel Transport</h1>
-                <p style=""><b>Address :</b>Vaijapur-Gangapur Road, Vaijapur, Dist. Aurangabad, Maharashtra, India</p>
+                <p  ><b>Address :</b>Vaijapur-Gangapur Road, Vaijapur, Dist. Aurangabad, Maharashtra, India</p>
                 <p style="margin-top:-10px;"><b>Email ID:</b> company_email@gmail.com</p>
                 <p style="margin-top:-10px;"><b>Contact Details:</b> Mobile : +91 7757868445</p>
             </div>
@@ -145,12 +145,14 @@
             </center>
             <table class="bill-table">
                 <tbody>
+                     
+                        <h2>Party : {{ bill.party.name }}</h2>
                     <tr>
                         <th style="width: 150px;">Bill Number</th>
                         <td><b style="color:red;">{{ bill.bill_number }}</b></td>
                         <th>Date</th>
                         <td>
-                            {{ bill.updated_at }}
+                            {{ bill.bill_date }}
                         </td>
                     </tr>
                     <tr>

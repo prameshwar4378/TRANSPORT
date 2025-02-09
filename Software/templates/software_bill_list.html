@@ -28,7 +28,7 @@
                 <div class="text-lg-end text-start">
                     <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#model_create_bill"><i class="mdi mdi-filter"></i> Add New Bill</a>
                     <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#model_filter"><i class="mdi mdi-filter"></i> Filter</a>
-                    <a href="#" class="btn btn-success" data-toggle="modal" data-target=""><i class="mdi mdi-filter"></i> Export</a>
+                    <a href="#" class="btn btn-success" data-toggle="modal" data-target="#model_export_bill"><i class="mdi mdi-filter"></i> Export</a>
                 </div>
             </div>
         </div>
@@ -145,8 +145,8 @@
                         </div> 
                         
                         <div class="col-sm-6 mb-2 mt-2">
-                            <label for="driver">Driver: <span style="color: #b8c49d;">(driver name - 88888888888)</span></label>
-                            <input list="driverdata" class="form-control mt-2" name="driver" id="driver">
+                            <label for="driver">Driver: <span style="color: #b8c49d;">(driver name - 88888888888)</span> <span class="badge" id="driver_is_adhar_available">adhar</span> <span class="badge" id="driver_is_licence_available">licence</span></label>
+                            <input list="driverdata" class="form-control mt-2" name="driver" id="driver" oninput="get_driver_profile_status()">
                             <datalist id="driverdata">
                                 {% if driver_rec %}
                                     {% for i in driver_rec %}
@@ -161,8 +161,11 @@
                         </div> 
                         
                         <div class="col-sm-6 mb-2 mt-2">
-                            <label for="owner">Vehicle Owner: <span style="color: #b8c49d;">(owner name - 88888888888)</span></label>
-                            <input list="ownerdata" class="form-control mt-2" name="owner" id="owner">
+                            <label for="owner">Vehicle Owner: <span style="color: #b8c49d;">(owner name - 88888888888)</span>
+                                <span class="badge" id="vehicle_owner_is_adhar_available">Adhar</span>
+                                <span class="badge" id="vehicle_owner_is_pan_card_available">Pan</span>
+                            </label>
+                            <input list="ownerdata" class="form-control mt-2" name="owner" id="owner" oninput="get_vehicle_owner_profile_status()">
                             <datalist id="ownerdata">
                                 {% if owner_rec %}
                                     {% for i in owner_rec %}
@@ -177,8 +180,8 @@
                         </div> 
                         
                         <div class="col-sm-6 mb-2 mt-2">
-                            <label for="party">Party: <span style="color: #b8c49d;">(party name - 88888888888)</span></label>
-                            <input list="partydata" class="form-control mt-2" name="party" id="party">
+                            <label for="party">Party: <span style="color: #b8c49d;">(party name - 88888888888)</span> <span class="badge" id="party_is_adhar_available">adhar</span> <span class="badge" id="party_is_pan_card_available">pan</span></label>
+                            <input list="partydata" class="form-control mt-2" name="party" id="party"  oninput="get_party_profile_status()">
                             <datalist id="partydata">
                                 {% if party_rec %}
                                     {% for i in party_rec %}
@@ -192,41 +195,49 @@
                             </datalist>
                         </div> 
                         
-                        <div class="col-sm-4">
+                        <div class="col-sm-6">
                             {{ bill_form.from_location|as_crispy_field }}
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-6">
                             {{ bill_form.to_location|as_crispy_field }}
                         </div>
-                        <div class="col-sm-4">
-                            {{ bill_form.material_type|as_crispy_field }}
-                        </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                             {{ bill_form.rent_amount|as_crispy_field }}
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                             {{ bill_form.advance_amount|as_crispy_field }}
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                             {{ bill_form.pending_amount|as_crispy_field }}
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
+                            {{ bill_form.material_type|as_crispy_field }}
+                        </div>
+
+                        <div class="col-sm-3">
                             {{ bill_form.commission_charge|as_crispy_field }}
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                             {{ bill_form.commission_received|as_crispy_field }}
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-3">
                             {{ bill_form.commission_pending|as_crispy_field }}
                         </div>
-                        <div class="col-sm-6 mb-2 ">
+                        <div class="col-sm-3 ">
+                            {{ bill_form.commission_received_date|as_crispy_field }}
+                        </div> 
+                        <div class="col-sm-4 mb-2 ">
                             <label for="reference">Reference: <span style="color: #b8c49d;">(name - 88888888888)</span></label>
                             <input list="ownerdata" class="form-control mt-2" name="reference" id="reference">
                         </div> 
                         
-                        <div class="col-sm-12">
+                        <div class="col-sm-5">
                             {{ bill_form.notes|as_crispy_field }}
                         </div>
+                        <div class="col-sm-3 ">
+                            {{ bill_form.bill_date|as_crispy_field }}
+                        </div> 
+                        
                     </div>
                     
                     <div class="modal-footer">
@@ -287,7 +298,7 @@
 
 <div class="modal fade" id="model_filter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
 aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 800px;">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 1000px;">
         <div class="modal-content">
             <div class="modal-header" style="background:#9c4b2e;">
                 <h4 class="modal-title text-white" id="exampleModalLongTitle">Filter Job Card</h4>
@@ -311,15 +322,12 @@ aria-hidden="true">
                     </div>
                 
                     <div class="row">
-                        <div class="col-sm-4">
+                        <div class="col-sm-6">
                             {{ filter.form.commission_less_than|as_crispy_field }}
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-6">
                             {{ filter.form.commission_greater_than|as_crispy_field }}
-                        </div>
-                        <div class="col-sm-4">
-                            {{ filter.form.pending_amount|as_crispy_field }}
-                        </div>
+                        </div> 
                     </div>
                 
                     <div class="row">
@@ -331,11 +339,15 @@ aria-hidden="true">
                         </div>
                     </div>
                 
+
                     <div class="row">
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
+                            {{ filter.form.vehicle_owner|as_crispy_field }}
+                        </div>
+                        <div class="col-sm-4">
                             {{ filter.form.reference|as_crispy_field }}
                         </div>
-                        <div class="col-sm-6">
+                        <div class="col-sm-4">
                             {{ filter.form.party|as_crispy_field }}
                         </div>
                     </div>
@@ -353,6 +365,81 @@ aria-hidden="true">
                         <button type="button" class="btn btn-secondary bgcolor px-3" data-dismiss="modal">Close</button>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="model_export_bill" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 800px;">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#9c4b2e;">
+                <h4 class="modal-title text-white" id="exampleModalLongTitle">Export Bill Records</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-left">
+                <form method="GET" enctype="multipart/form-data" action="{% url 'software_export_filtered_bill_records' %}">
+                    {% csrf_token %} 
+                        <div class="row">
+                            <div class="col-sm-4">
+                                {{ filter.form.bill_number|as_crispy_field }}
+                            </div> 
+                            <div class="col-sm-4">
+                                {{ filter.form.start_date|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-4">
+                                {{ filter.form.end_date|as_crispy_field }}
+                            </div> 
+                        </div>
+                    
+                        <div class="row">
+                            <div class="col-sm-6">
+                                {{ filter.form.commission_less_than|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-6">
+                                {{ filter.form.commission_greater_than|as_crispy_field }}
+                            </div> 
+                        </div>
+                    
+                        <div class="row">
+                            <div class="col-sm-6">
+                                {{ filter.form.from_location|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-6">
+                                {{ filter.form.to_location|as_crispy_field }}
+                            </div>
+                        </div>
+                    
+                        <div class="row">
+                            <div class="col-sm-4">
+                                {{ filter.form.vehicle_owner|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-4">
+                                {{ filter.form.reference|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-4">
+                                {{ filter.form.party|as_crispy_field }}
+                            </div>
+                        </div>
+                    
+                        <div class="row">
+                            <div class="col-sm-6">
+                                {{ filter.form.vehicle|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-6">
+                                {{ filter.form.driver|as_crispy_field }}
+                            </div>
+                        </div>
+                     
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary bgcolor px-3" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
                 </form>
             </div>
         </div>
@@ -404,6 +491,7 @@ aria-hidden="true">
             type: 'GET',
             success: function (data) {
                 $('#owner').val(data.owner_data); 
+                get_vehicle_owner_profile_status()
             },
             error: function (error) { 
             }
@@ -413,10 +501,132 @@ aria-hidden="true">
 
 
 <script>
+    function get_driver_profile_status() {
+        var driver = $('#driver').val();
+        $('#driver_is_adhar_available').css('background-color', '#dedede'); // Green if available
+        $('#driver_is_licence_available').css('background-color', '#dedede'); // Green if available
+        $.ajax({
+            url: '/software/get_driver_profile_status/',  // Endpoint to fetch data
+            data: {'driver': driver},
+            type: 'GET',
+            success: function (data) {
+                if (data.error) {
+                    console.log(data.error);  // If there's an error, log the message
+                } else {
+                    // Update Adhar Card badge color
+                    console.log(data.adhar_card)
+                    console.log(data.licence)
+                    if (data.adhar_card) {
+                        $('#driver_is_adhar_available').css('background-color', '#28a745'); // Green if available
+
+                    } else {
+                        $('#driver_is_adhar_available').css('background-color', '#dc3545');  // Red if not available
+                    }
+
+                    // Update Licence badge color
+                    if (data.licence) {
+                        $('#driver_is_licence_available').css('background-color', '#28a745');  // Green if available
+                    } else {
+                        $('#driver_is_licence_available').css('background-color', '#dc3545');  // Red if not available
+                    }
+ 
+                }
+            },
+            error: function (error) {
+                console.log('Error:', error);  // Log any errors during the AJAX request
+            }
+        });
+    }
+</script>
+
+
+<script>
+    function get_party_profile_status() {
+        var party = $('#party').val();  // Obtain the party input value
+        
+        // Default color for the badges
+        $('#party_is_adhar_available').css('background-color', '#dedede');
+        $('#party_is_pan_card_available').css('background-color', '#dedede');
+        
+        $.ajax({
+            url: '/software/get_party_profile_status/',  // Endpoint to fetch data
+            data: {'party': party},
+            type: 'GET',
+            success: function (data) {
+                if (data.error) {
+                    console.log(data.error);  // If there's an error, log the message
+                } else {
+                    // Update Adhar Card badge color
+                    if (data.adhar_card) {
+                        $('#party_is_adhar_available').css('background-color', '#28a745'); // Green if available
+                    } else {
+                        $('#party_is_adhar_available').css('background-color', '#dc3545'); // Red if not available
+                    }
+
+                    // Update Pan Card badge color
+                    if (data.pan_card) {
+                        $('#party_is_pan_card_available').css('background-color', '#28a745'); // Green if available
+                    } else {
+                        $('#party_is_pan_card_available').css('background-color', '#dc3545'); // Red if not available
+                    }
+                }
+            },
+            error: function (error) {
+                console.log('Error:', error);  // Log any errors during the AJAX request
+            }
+        });
+    }
+</script>
+
+
+
+<script>
+    function get_vehicle_owner_profile_status() {
+        var owner = $('#owner').val();  // Obtain the owner input value
+        
+        // Default color for the badges
+        $('#vehicle_owner_is_adhar_available').css('background-color', '#dedede');
+        $('#vehicle_owner_is_pan_card_available').css('background-color', '#dedede');
+        
+        $.ajax({
+            url: '/software/get_vehicle_owner_profile_status/',  // Endpoint to fetch data
+            data: {'owner': owner},
+            type: 'GET',
+            success: function (data) {
+                if (data.error) {
+                    console.log(data.error);  // If there's an error, log the message
+                } else {
+                    // Update Adhar Card badge color
+                    if (data.adhar_card) {
+                        $('#vehicle_owner_is_adhar_available').css('background-color', '#28a745'); // Green if available
+                    } else {
+                        $('#vehicle_owner_is_adhar_available').css('background-color', '#dc3545'); // Red if not available
+                    }
+
+                    // Update Pan Card badge color
+                    if (data.pan_card) {
+                        $('#vehicle_owner_is_pan_card_available').css('background-color', '#28a745'); // Green if available
+                    } else {
+                        $('#vehicle_owner_is_pan_card_available').css('background-color', '#dc3545'); // Red if not available
+                    }
+                }
+            },
+            error: function (error) {
+                console.log('Error:', error);  // Log any errors during the AJAX request
+            }
+        });
+    }
+</script>
+
+
+
+<script>
     $(function(){
     $("#id_vehicle").selectize();
      $("#id_driver").selectize();
      $("#id_party").selectize();
+     $("#id_reference").selectize();
+     $("#id_vehicle_owner").selectize();
     }); 
    </script>
    

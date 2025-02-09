@@ -9,13 +9,13 @@ from Developer.models import *
  
 class BillFilter(django_filters.FilterSet):
     start_date = django_filters.DateFilter(
-        field_name='created_at',
+        field_name='bill_date',
         lookup_expr='gte',
         widget=DateInput(attrs={'type': 'date'}),
         label='Start Date'
     )
     end_date = django_filters.DateFilter(
-        field_name='created_at',
+        field_name='bill_date',
         lookup_expr='lte',
         widget=DateInput(attrs={'type': 'date'}),
         label='End Date'
@@ -32,7 +32,23 @@ class BillFilter(django_filters.FilterSet):
         label='Commision  Greater Than'
     )
     
-
+    commission_less_than = django_filters.NumberFilter(
+        field_name='commission_pending',
+        lookup_expr='lte',
+        label='Commision Pending LTE <='
+    )
+    
+    commission_greater_than = django_filters.NumberFilter(
+        field_name='commission_pending',
+        lookup_expr='gte',
+        label='Commision Pending GTE >= '
+    )
+    vehicle_owner = django_filters.ModelChoiceFilter(
+        queryset=VehicleOwner.objects.all(),  # Get all VehicleOwner records
+        field_name='vehicle__owner',  # Link this to the 'Vehicle' model's owner foreign key
+        empty_label="---------",  # Default empty label
+        label='Vehicle Owner'
+    )    
     def __init__(self, *args, **kwargs):
         super(BillFilter, self).__init__(*args, **kwargs)
         self.filters['start_date'].label = "Start Date"
@@ -40,6 +56,7 @@ class BillFilter(django_filters.FilterSet):
 
     class Meta:
         model = Bill
-        fields = ['created_at', 'commission', 'pending_amount', 'from_location', 'to_location', 'reference', 'vehicle', 'driver', 'party', 'bill_number']
+        fields = ['commission_pending',  'from_location', 'to_location', 'reference', 'vehicle', 'driver', 'party', 'bill_number', 'vehicle__owner']
 
 
+ 

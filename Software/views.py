@@ -3,7 +3,7 @@ from .forms import *
 # Create your views here.
 from django.core.exceptions import ValidationError
 from django.contrib import messages
-
+from datetime import date
 
 from django.http import JsonResponse
 from django.db import  transaction
@@ -255,7 +255,8 @@ from .filters import *
 
 def bill_list(request):
     # Create the form instance
-    bill_form = BillForm()
+
+    bill_form = BillForm(initial={'bill_date':date.today()})
 
     # Optimize Bill Query
     bill_rec = Bill.objects.only(
@@ -323,6 +324,7 @@ def create_bill(request):
                             mobile_number = mobile_number.strip() 
                             # Check or create driver record
                             owner, created = VehicleOwner.objects.get_or_create(owner_name=name, owner_mobile_number=mobile_number)
+                            Vehicle.objects.filter(vehicle_number=vehicle_number).update(owner=owner)
                         else:
                             owner = None
                     except Exception as e:
@@ -331,7 +333,7 @@ def create_bill(request):
                         owner = None
                 else:
                     owner = None
-
+ 
                 # Create Driver Record
                 driver = request.POST.get('driver')  
                 if driver:
@@ -405,10 +407,12 @@ def create_bill(request):
                     fm.business = request.user.business
                     fm.vehicle = vehicle
                     if owner:
-                        fm.owner=owner
+                        fm.owner=owner 
                     if driver:
                         fm.driver=driver
-                    if reference:
+                    if party:
+                        fm.party=party
+                    if party:
                         fm.reference=reference
                     fm.save()
                     messages.success(request, 'Bill created successfully')
@@ -480,4 +484,110 @@ def print_bill(request, id):
     bill = get_object_or_404(Bill, id=id) 
     return render(request, 'software_print_bill.html', {'bill':bill})
 
+
+def get_driver_profile_status(request):
+    driver = request.GET.get('driver', '')  # Get 'driver' from the URL parameters
+    
+    if driver:
+        if '-' in driver:
+            parts = driver.split(' - ', 1)
+            name, mobile_number = parts
+            name = name.strip()
+            mobile_number = mobile_number.strip()
+            
+            # Check for the driver record using the name and mobile number
+            driver_instance = Driver.objects.filter(driver_name=name, mobile=mobile_number).first()
+            
+            if driver_instance:
+                licence_status = bool(driver_instance.licence)  # True if licence exists, otherwise False
+                adhar_card_status = bool(driver_instance.adhar_card)  # True if adhar_card exists, otherwise False
+                # Prepare the response data
+                data = {
+                    'adhar_card': adhar_card_status, 
+                    'licence': licence_status,
+                }
+                return JsonResponse(data)
+            else:
+                data = {
+                    'adhar_card': False, 
+                    'licence': False,
+                }
+                return JsonResponse(data)
+        else:
+            return JsonResponse({'error': 'Driver data not in proper format (should be "Name - Mobile")'})
+    else:
+        return JsonResponse({'error': 'Driver data not found'})
+
+
+def get_party_profile_status(request):
+    party = request.GET.get('party', '')  # Get 'party' from the URL parameters
+    if party:
+        if '-' in party:
+            parts = party.split(' - ', 1)
+            name, mobile_number = parts
+            name = name.strip()
+            mobile_number = mobile_number.strip()
+            
+            # Check for the party record using the name and mobile number
+            party_instance = Party.objects.filter(name=name, mobile=mobile_number).first()
+ 
+            if party_instance:
+                # Check the status of the specific documents
+                adhar_card_status = bool(party_instance.adhar_card)
+                pan_card_status = bool(party_instance.pan_card)
+                
+                # Prepare the response data
+                data = {
+                    'adhar_card': adhar_card_status, 
+                    'pan_card': pan_card_status,
+                }
+                return JsonResponse(data)
+            else:
+                # If no party is found, return false for both fields
+                data = {
+                    'adhar_card': False, 
+                    'pan_card': False,
+                }
+                return JsonResponse(data)
+        else:
+            return JsonResponse({'error': 'Party data not in proper format (should be "Name - Mobile")'})
+    else:
+        return JsonResponse({'error': 'Party data not found'})
+
+
+def get_vehicle_owner_profile_status(request):
+    owner = request.GET.get('owner', '')  # Get 'owner' from the URL parameters
+    
+    if owner:
+        if '-' in owner:
+            parts = owner.split(' - ', 1)
+            name, mobile_number = parts
+            name = name.strip()
+            mobile_number = mobile_number.strip()
+            
+            # Check for the vehicle owner record using the name and mobile number
+            owner_instance = VehicleOwner.objects.filter(owner_name=name, owner_mobile_number=mobile_number).first()
+            
+            if owner_instance:
+                # Check the status of the specific documents
+                adhar_card_status = bool(owner_instance.adhar_card)
+                pan_card_status = bool(owner_instance.pan_card)
+                
+                # Prepare the response data
+                data = {
+                    'adhar_card': adhar_card_status, 
+                    'pan_card': pan_card_status,
+                }
+                return JsonResponse(data)
+            else:
+                # If no vehicle owner is found, return false for both fields
+                data = {
+                    'adhar_card': False, 
+                    'pan_card': False,
+                }
+                return JsonResponse(data)
+        else:
+            return JsonResponse({'error': 'Owner data not in proper format (should be "Name - Mobile")'})
+    else:
+        return JsonResponse({'error': 'Owner data not found'})
 

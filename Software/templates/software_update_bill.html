@@ -58,6 +58,13 @@
                                     <div class="col-sm-4">
                                         {{ form.commission_pending|as_crispy_field }}
                                     </div> 
+                                    
+                                    <div class="col-sm-6 ">
+                                        {{ form.commission_received_date|as_crispy_field }}
+                                    </div> 
+                                    <div class="col-sm-6 ">
+                                        {{ form.bill_date|as_crispy_field }}
+                                    </div> 
                                     <div class="col-sm-6">
                                         {{ form.reference|as_crispy_field }}
                                     </div> 
@@ -102,6 +109,22 @@
         const rentInput = document.getElementById("id_rent_amount");
         const advanceInput = document.getElementById("id_advance_amount");
         const pendingInput = document.getElementById("id_pending_amount");
+
+        // Parse the values and default to 0 if empty or invalid
+        const rentAmount = parseFloat(rentInput.value) || 0;
+        const advanceAmount = parseFloat(advanceInput.value) || 0;
+
+        // Directly set the pending amount field without extra calculations
+        pendingInput.value = rentAmount >= advanceAmount ? rentAmount - advanceAmount : 0;
+    }
+</script>
+   
+<script>
+    function calculate_commission_pending() {
+        // Get references to the input fields
+        const rentInput = document.getElementById("id_commission_charge");
+        const advanceInput = document.getElementById("id_commission_received");
+        const pendingInput = document.getElementById("id_commission_pending");
 
         // Parse the values and default to 0 if empty or invalid
         const rentAmount = parseFloat(rentInput.value) || 0;
