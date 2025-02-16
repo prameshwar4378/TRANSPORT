@@ -107,7 +107,7 @@ from django.core.exceptions import ValidationError
 
 class Bill(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, null=True, blank=True) 
-    bill_number = models.CharField(max_length=10, unique=True, editable=False)
+    bill_number = models.CharField(max_length=10, unique=True, editable=False, db_index=True)
     party = models.ForeignKey(
         'Party', on_delete=models.SET_NULL, related_name='bills', verbose_name="Party Name", null=True, blank=True
     ) 
@@ -138,16 +138,11 @@ class Bill(models.Model):
     bill_date = models.DateField(verbose_name="Bill Date")
     commission_received_date = models.DateField(null=True, blank=True, verbose_name="Commission Received Date")
 
-    class Meta:
-        verbose_name = "Bill"
-        verbose_name_plural = "Bills"
+    class Meta: 
         ordering = ['-bill_date']
 
     def __str__(self):
-        if self.bill_number and self.party:
-            return f"Bill #{self.bill_number} for {self.party.name}"
-        else:
-            return f"Bill #{self.bill_number}"
+        return f"Bill #{self.bill_number} for {self.party.name if self.party else 'Unknown'}"
 
     def clean(self):
         """
@@ -160,10 +155,6 @@ class Bill(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.bill_number:
-            last_bill = Bill.objects.order_by('id').last()
-            if last_bill:
-                bill_number = int(last_bill.bill_number) + 1
-            else:
-                bill_number = 1
-            self.bill_number = str(bill_number).zfill(5)  # Auto-generate e.g., 00001, 00002
+            last_bill = Bill.objects.order_by('-id').first()
+            self.bill_number = str((int(last_bill.bill_number) + 1) if last_bill else 1).zfill(5)
         super().save(*args, **kwargs)

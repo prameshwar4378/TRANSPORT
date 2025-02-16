@@ -40,5 +40,6 @@ urlpatterns = [
     path('get_vehicle_owner_profile_status/', get_vehicle_owner_profile_status, name='software_get_vehicle_owner_profile_status'),
     
     path('export_filtered_bill_records/', export_filtered_bill_records, name='software_export_filtered_bill_records'),
+    path('export_todays_bill_records/', export_todays_bill_records, name='software_export_todays_bill_records'),
  
 ]+static(settings.STATIC_URL,document_root=settings.MEDIA_ROOT) 

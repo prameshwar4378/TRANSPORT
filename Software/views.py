@@ -4,14 +4,43 @@ from .forms import *
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from datetime import date
-
+from django.db.models import Sum
 from django.http import JsonResponse
 from django.db import  transaction
-
+from django.utils.timezone import localdate
+from django.db.models import Count
+from datetime import datetime, timedelta 
+from django.db.models.functions import TruncDate
 
 def dashboard(request): 
-    return render(request, 'software_dashboard.html')
+    today = localdate()  # Get today's date
 
+    # Filter today's bills
+    today_bills = Bill.objects.filter(bill_date=today)
+
+    # Calculate totals
+    total_bills_generated = today_bills.count()
+    total_commission_amount = today_bills.aggregate(Sum('commission_charge'))['commission_charge__sum'] or 0
+    received_commission = today_bills.aggregate(Sum('commission_received'))['commission_received__sum'] or 0
+    pending_commission = today_bills.aggregate(Sum('commission_pending'))['commission_pending__sum'] or 0
+
+    total_owners = VehicleOwner.objects.count()
+    total_vehicles = Vehicle.objects.count()
+    total_parties = Party.objects.count()
+    total_drivers = Driver.objects.count()
+ 
+    context = {
+        'total_bills_generated': total_bills_generated,
+        'total_commission_amount': total_commission_amount,
+        'received_commission': received_commission,
+        'pending_commission': pending_commission,
+        'total_owners': total_owners,
+        'total_vehicles': total_vehicles,
+        'total_parties': total_parties,
+        'total_drivers': total_drivers,
+    }
+
+    return render(request, 'software_dashboard.html', context)
 
 
 def owner_list(request): 

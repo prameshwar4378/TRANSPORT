@@ -27,6 +27,43 @@
         background-color:#fff;
         box-shadow:0px 0px 10px -3px;
     }
+
+
+
+    .aditional-count-container {
+        margin: auto;
+        padding: 20px;
+    }
+    .aditional-count-card-custom {
+        border: none;
+        border-radius: 15px;
+        padding: 1px;
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+    .aditional-count-card-custom:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    .card-icon {
+        font-size: 40px;
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 15px;
+        border-radius: 10px;
+        display: inline-block;
+    }
+    .card-title {
+        font-size: 18px;
+        font-weight: bold;
+    }
+    .card-value {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    .bg-owners { background: #ff5733; }
+    .bg-vehicles { background: #28a745; }
+    .bg-parties { background: #007bff; }
+    .bg-drivers { background: #ffc107; }
 </style>
 <main id="main" class="main">
     <div class="pagetitle">
@@ -47,12 +84,68 @@
             </div>
         </div>
     </div>
+
+
+    
+    <div class="row mt-3">
+        <div class="row mx-1 py-2 header-today-section"> 
+    
+            <h4>Today's Status <a href="{% url 'software_export_todays_bill_records' %}" class="btn btn-primary px-3 px-0 ">Export Excel</a></h4>
+            <hr>
+            
+            <div class="container aditional-count-container" >
+                <div class="row g-4">
+                    <!-- Owners Card -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card aditional-count-card-custom bg-owners text-white text-center">
+                            <div class="card-body">
+                                <h5 class="card-title mt-3">Total Bills Generated</h5>
+                                <p class="card-value">{{ total_bills_generated }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vehicles Card -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card aditional-count-card-custom bg-vehicles text-white text-center">
+                            <div class="card-body">
+                                <h5 class="card-title mt-3">Commission Amount</h5>
+                                <p class="card-value">{{ total_commission_amount }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Parties Card -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card aditional-count-card-custom bg-parties text-white text-center">
+                            <div class="card-body">
+                                <h5 class="card-title mt-3">Received Amount</h5>
+                                <p class="card-value">{{ received_commission }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Drivers Card -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card aditional-count-card-custom bg-drivers text-white text-center">
+                            <div class="card-body">
+                                <h5 class="card-title mt-3">Pending Commission</h5>
+                                <p class="card-value">{{ pending_commission }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>  
+    
+
+
     <div class="row mt-3">
         <div class="row mx-1 py-2 header-today-section">
             <h4>Today's Status</h4>
             <hr>
-            <div class="row">
-                <!-- Total Loan Amount Card -->
+            <div class="row"> 
                 <div class="col-sm-3">
                     <a href="#" style="text-decoration:none;">  
                         <div class="card radius-10 border-start border-0 border-5 border-info">
@@ -60,7 +153,7 @@
                                 <div class="d-flex align-items-center">
                                     <div>
                                         <p class="mb-0 text-secondary">Total Bills Generated</p>
-                                        <h3 class="my-1 text-info">0</h3>
+                                        <h3 class="my-1 text-info">{{total_bills_generated}}</h3>
                                     </div>
                                     <div class="widgets-icons-2 rounded-circle bg-gradient-scooter text-white ms-auto">
                                         <h1 class="text-info">₹</h1>
@@ -80,7 +173,7 @@
                                     
                                     <div>
                                         <p class="mb-0 text-secondary">Commission Amount</p>
-                                        <h3 class="my-1 text-success">0</h3>
+                                        <h3 class="my-1 text-success">{{total_commission_amount}}</h3>
                                     </div>
                                     <div class="widgets-icons-2 rounded-circle bg-gradient-scooter text-white ms-auto">
                                         <h1 class="text-danger">₹</h1>
@@ -98,7 +191,7 @@
                                 <div class="d-flex align-items-center">
                                     <div>
                                         <p class="mb-0 text-secondary">Received Commission</p>
-                                        <h3 class="my-1" style="color:#B14ABB;">0</h3>
+                                        <h3 class="my-1" style="color:#B14ABB;">{{received_commission}}</h3>
                                     </div>
                                     <div class="widgets-icons-2 rounded-circle bg-gradient-scooter text-white ms-auto">
                                         <h1 class="text-danger">₹</h1>
@@ -116,7 +209,7 @@
                                 <div class="d-flex align-items-center">
                                     <div>
                                         <p class="mb-0 text-secondary">Pending Commission</p>
-                                        <h3 class="my-1" style="color:#B14ABB;">0</h3>
+                                        <h3 class="my-1" style="color:#B14ABB;">{{pending_commission}}</h3>
                                     </div>
                                     <div class="widgets-icons-2 rounded-circle bg-gradient-scooter text-white ms-auto">
                                         <h1 class="text-danger">₹</h1>
@@ -131,6 +224,51 @@
              
         </div>
     </div>  
+
+
+
+ <!-- 
+    <div class="row">
+        <div class="col-sm-4 mt-3">
+          <div class="card recent-sales " style="height: 100%;">
+              <div class="mt-2 p-3">
+                  <h4 class="">Bills Overview</h4><hr>
+                  <center>
+                      <div style="width: 300px; text-align: center; height: 100%;">
+                            <canvas id="billChart"></canvas>
+                      </div>
+                  </center>
+              </div>
+            </div>
+        </div> 
+        
+        <div class="col-sm-4 mt-3">
+            <div class="card recent-sales " style="height: 100%;">
+                <div class="mt-2 p-3">
+                    <h4 class="">Stock Overview</h4><hr>
+                    <center>
+                        <div style="width: 300px; text-align: center; height: 100%;">
+                            <canvas id="stockChart" style="height: 100%; width: 100%;"></canvas>
+                        </div>
+                    </center>
+                </div>
+            </div>
+        </div> 
+        
+        <div class="col-sm-4 mt-3">
+          <div class="card recent-sales overflow-auto" style="height: 100%; background-color: #f8f9fa;">
+              <div class="mt-2 p-3">
+                  <h3>Notifications and Alerts</h3>
+              </div>
+              <div class="card-body">
+                   
+              </div>
+          </div>
+        </div>
+
+      </div>-->
+ 
+    
 </main><!-- End #main -->
  
 {% endblock content %}

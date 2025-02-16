@@ -51,3 +51,48 @@ def export_filtered_bill_records(request):
     wb.save(response)
 
     return response
+
+
+
+def export_todays_bill_records(request):
+    # Filter bills with today's date
+    today = date.today()
+    queryset = Bill.objects.filter(bill_date=today).order_by('id')
+
+    # Create a new Workbook and add a sheet
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Bill Report"
+
+    # Define the header row for the Excel sheet
+    headers = ['Bill Number', 'Vehicle Number', 'Vehicle Owner', 'Driver', 'Party', 
+               'From Location', 'To Location', 'Commission Amount', 'Commission Advance',  
+               'Commission Pending', 'Commission Pay Date', 'Bill Date']
+    ws.append(headers)
+
+    # Loop through each filtered record and append data to the sheet
+    for bill in queryset:
+        row = [
+            bill.bill_number, 
+            bill.vehicle.vehicle_number if bill.vehicle else '',  
+            bill.vehicle.owner.owner_name if bill.vehicle and bill.vehicle.owner else '',  
+            bill.driver.driver_name if bill.driver else '',  
+            bill.party.name if bill.party else '',  
+            bill.from_location,
+            bill.to_location,
+            bill.commission_charge,
+            bill.commission_received,  
+            bill.commission_pending,  
+            bill.commission_received_date.strftime("%Y-%m-%d") if bill.commission_received_date else '',  
+            bill.bill_date.strftime("%Y-%m-%d") if bill.bill_date else '',
+        ]
+        ws.append(row)
+
+    # Create an HTTP response with the Excel file content
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename=Bill_Details_{today}.xlsx'
+
+    # Save the workbook to the response
+    wb.save(response)
+
+    return response
