@@ -100,7 +100,7 @@
                         <div class="card aditional-count-card-custom bg-owners text-white text-center">
                             <div class="card-body">
                                 <h5 class="card-title mt-3">Total Bills Generated</h5>
-                                <p class="card-value">{{ total_bills_generated }}</p>
+                                <p class="card-value">{{ today_bills_generated }}</p>
                             </div>
                         </div>
                     </div>
@@ -110,7 +110,7 @@
                         <div class="card aditional-count-card-custom bg-vehicles text-white text-center">
                             <div class="card-body">
                                 <h5 class="card-title mt-3">Commission Amount</h5>
-                                <p class="card-value">{{ total_commission_amount }}</p>
+                                <p class="card-value">{{ today_commission_amount }}</p>
                             </div>
                         </div>
                     </div>
@@ -143,7 +143,7 @@
 
     <div class="row mt-3">
         <div class="row mx-1 py-2 header-today-section">
-            <h4>Today's Status</h4>
+            <h4>Averall Overview</h4>
             <hr>
             <div class="row"> 
                 <div class="col-sm-3">
@@ -191,7 +191,7 @@
                                 <div class="d-flex align-items-center">
                                     <div>
                                         <p class="mb-0 text-secondary">Received Commission</p>
-                                        <h3 class="my-1" style="color:#B14ABB;">{{received_commission}}</h3>
+                                        <h3 class="my-1" style="color:#B14ABB;">{{total_received_commission}}</h3>
                                     </div>
                                     <div class="widgets-icons-2 rounded-circle bg-gradient-scooter text-white ms-auto">
                                         <h1 class="text-danger">₹</h1>
@@ -209,7 +209,7 @@
                                 <div class="d-flex align-items-center">
                                     <div>
                                         <p class="mb-0 text-secondary">Pending Commission</p>
-                                        <h3 class="my-1" style="color:#B14ABB;">{{pending_commission}}</h3>
+                                        <h3 class="my-1" style="color:#B14ABB;">{{total_pending_commission}}</h3>
                                     </div>
                                     <div class="widgets-icons-2 rounded-circle bg-gradient-scooter text-white ms-auto">
                                         <h1 class="text-danger">₹</h1>
@@ -227,48 +227,85 @@
 
 
 
- <!-- 
+ 
     <div class="row">
-        <div class="col-sm-4 mt-3">
+        <div class="col-sm-6 mt-3">
           <div class="card recent-sales " style="height: 100%;">
               <div class="mt-2 p-3">
-                  <h4 class="">Bills Overview</h4><hr>
+                  <h4 class="">Counts</h4><hr>
                   <center>
                       <div style="width: 300px; text-align: center; height: 100%;">
-                            <canvas id="billChart"></canvas>
+                            <canvas id="myChart"></canvas>
                       </div>
                   </center>
               </div>
             </div>
         </div> 
-        
-        <div class="col-sm-4 mt-3">
-            <div class="card recent-sales " style="height: 100%;">
-                <div class="mt-2 p-3">
-                    <h4 class="">Stock Overview</h4><hr>
-                    <center>
-                        <div style="width: 300px; text-align: center; height: 100%;">
-                            <canvas id="stockChart" style="height: 100%; width: 100%;"></canvas>
-                        </div>
-                    </center>
-                </div>
-            </div>
-        </div> 
-        
-        <div class="col-sm-4 mt-3">
+         
+        <div class="col-sm-6 mt-3">
           <div class="card recent-sales overflow-auto" style="height: 100%; background-color: #f8f9fa;">
               <div class="mt-2 p-3">
-                  <h3>Notifications and Alerts</h3>
+                  <h3>Top Pending Amount Owners</h3>
               </div>
               <div class="card-body">
-                   
+                {% comment %} <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Vehicle Owner</th>
+                            <th>Total Pending Commission (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for owner in top_owners %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ owner.name }}</td>  <!-- Replace 'name' with actual field name -->
+                            <td>{{ owner.total_pending }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">No pending commissions</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table> {% endcomment %}
               </div>
           </div>
         </div>
 
-      </div>-->
- 
+      </div> 
     
+      <script>
+        // Data passed from Django
+        var chart_labels = JSON.parse('{{ chart_labels|safe }}'); 
+        var chart_data = JSON.parse('{{ chart_data|safe }}'); 
+
+        // Create Chart
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'pie', // Change to 'pie', 'line', etc.
+            data: {
+                labels: chart_labels,
+                datasets: [{
+                    label: 'Entity Count',
+                    data: chart_data,
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50'],
+                    borderColor: '#ddd',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
 </main><!-- End #main -->
  
 {% endblock content %}

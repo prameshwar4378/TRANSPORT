@@ -66,6 +66,7 @@
                                         <td class="text-left">{% if r.document2 %}  <a href="/media/{{r.document2 }}" download>download</a> {% else %} ---- {% endif %}</td>
                                         <td>
                                             <center>
+                                                <a href="{% url 'software_party_dashboard' r.id %}" class="btn btn-primary px-2 py-2">More Details</a>
                                                 <a href="javascript:void(0);" data-url="{% url "software_update_party" r.id %}" class="btn btn-warning    px-3" onclick="mini_window_2(this)">Update</a>
                                                 <a href="{% url 'software_delete_party' r.id %}" class="btn btn-danger px-2 py-2" onclick="confirmDelete(this); return false;">Delete</a>
                                             </center>
@@ -76,6 +77,26 @@
                                     {% endif %} 
                                 </tbody>
                             </table>
+
+                                     
+                            <!-- Pagination controls -->
+                            <div class="pagination-container">
+                                <div class="pagination">
+                                    {% if rec.has_previous %}
+                                        <a href="?page=1&{{ filter_params }}">« First</a>
+                                        <a href="?page={{ rec.previous_page_number }}&{{ filter_params }}">Previous</a>
+                                    {% endif %}
+                                    
+                                    <span class="current-page">Page {{ rec.number }} of {{ rec.paginator.num_pages }}</span>
+                    
+                                    {% if rec.has_next %}
+                                        <a href="?page={{ rec.next_page_number }}&{{ filter_params }}">Next</a>
+                                        <a href="?page={{ rec.paginator.num_pages }}&{{ filter_params }}">Last »</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                                    
+                            
                         </div>
 
                     </div>

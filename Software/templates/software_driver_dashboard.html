@@ -1,0 +1,356 @@
+{% extends "software_base.html" %}
+{% block title %}Driver Dashboard{% endblock title %}
+{% load static %}
+{% block content %}
+<style>
+  
+    .bg-c-blue {
+        background: linear-gradient(45deg,#4099ff,#73b4ff);
+    }
+    
+    .bg-c-green {
+        background: linear-gradient(45deg,#2ed8b6,#59e0c5);
+    }
+    
+    .bg-c-yellow {
+        background: linear-gradient(45deg,#FFB64D,#ffcb80);
+    }
+    
+    .bg-c-pink {
+        background: linear-gradient(45deg,#FF5370,#ff869a);
+    }
+    
+    
+    .card {
+        border-radius: 5px;
+        -webkit-box-shadow: 0 1px 2.94px 0.06px rgba(4,26,55,0.16);
+        box-shadow: 0 1px 2.94px 0.06px rgba(4,26,55,0.16);
+        border: none;
+        margin-bottom: 30px;
+        -webkit-transition: all 0.3s ease-in-out;
+        transition: all 0.3s ease-in-out;
+    }
+    
+    .card .card-block {
+        padding: 25px;
+    }
+    
+    .order-card i {
+        font-size: 26px;
+    }
+    
+    .f-left {
+        float: left;
+    }
+    
+    .f-right {
+        float: right;
+    }
+
+    .data-container {
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      }
+      .data-label {
+        font-weight: bold;
+      }
+      .file-link {
+        word-wrap: break-word;
+        max-width: 300px;
+      }
+
+
+
+      
+    .bill-info-header {
+        background-color:rgb(255, 255, 255);
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .info-field {
+        background-color: #f1f1f1;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        font-size: 1rem;
+        color: #555;
+        width: 100%;
+    }
+
+    .info-field strong { 
+        margin-bottom: 5px;
+        
+    }
+    .info-field a {
+        color: #0089be;
+        margin-bottom: 5px;
+        text-decoration: none;
+        text-align: center;
+    }
+
+    .col-sm-3 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .col-sm-4 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    @media (max-width: 768px) {
+
+        .col-sm-3,
+        .col-sm-4 {
+            margin-bottom: 15px;
+        }
+    }
+
+</style>
+<main id="main" class="main">
+    <div class="pagetitle">
+        <h1>Driver Dashboard</h1>
+        <div class="row">
+            <div class="col">
+            </div>
+        </div>
+    </div><!-- End Page Title -->
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="row">
+                <div class="container" style="max-width:97%;">
+                    <div class="text-lg-end text-start"> 
+                        <a href="javascript:void(0);" data-url="{% url 'software_update_driver' driver.id %}" class="btn btn-warning    px-3" onclick="mini_window_2(this)">Update</a>
+                    <a href="{% url 'software_export_bill_records_for_single_driver' driver.id %}" class="btn btn-success"><i class="mdi mdi-filter"></i> Export</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+     <hr> 
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-xl-3">
+                <div class="card bg-c-blue order-card">
+                    <div class="card-block">
+                        <h6 class="m-b-20">Total Bills Generated</h6>
+                        <h2 class="text-right"><i class="fa fa-cart-plus f-left"></i><span>{{ total_bills_generated }}</span></h2> 
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 col-xl-3">
+                <div class="card bg-c-green order-card">
+                    <div class="card-block">
+                        <h6 class="m-b-20">Commission Amount</h6>
+                        <h2 class="text-right"><i class="fa fa-rocket f-left"></i><span>{{ total_commission_amount }}</span></h2> 
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 col-xl-3">
+                <div class="card bg-c-yellow order-card">
+                    <div class="card-block">
+                        <h6 class="m-b-20">Received Amount</h6>
+                        <h2 class="text-right"><i class="fa fa-refresh f-left"></i><span>{{ received_commission }}</span></h2> 
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 col-xl-3">
+                <div class="card bg-c-pink order-card">
+                    <div class="card-block">
+                        <h6 class="m-b-20">Pending Commission</h6>
+                        <h2 class="text-right"><i class="fa fa-credit-card f-left"></i><span>{{ pending_commission }}</span></h2> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid  bill-info-header">
+        
+        <div class="row">
+            <div class="col-sm-2 bg-light">
+                {% if not driver.profile_photo %}
+                <img src="https://bitsofco.de/img/Qo5mfYDE5v-350.png" alt="" style="width: 100%; height: auto;">
+                {% else %} 
+                <img src="{{driver.profile_photo.url}}" alt="" style="width: 100%; height: auto;">
+
+                {% endif %}
+            </div>
+            
+            <div class="col-sm-10">
+                <div class="row">
+                    <div class="col-sm-4 mb-2">
+                        <div class="info-field">
+                            <strong>Driver Name:</strong> {{ driver.driver_name|default:"----" }}
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4 mb-2">
+                        <div class="info-field">
+                            <strong>Mobile</strong> {{ driver.mobile|default:"----" }}
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4 mb-2">
+                        <div class="info-field">
+                            <strong>Alternate Contact:</strong> {{ driver.alternate_mobile|default:"----" }}
+                        </div>
+                    </div> 
+        
+                    <div class="col-sm-3 mb-2">
+                        <div class="info-field">
+                            
+                            {% if driver.licence %}
+                                <center><a href="{{ driver.licence.url }}" download><strong>Licence</strong></a></center>
+                            {% else %}
+                            🚫 Licence  
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-sm-3 mb-2">
+                        <div class="info-field">
+                            
+                            {% if driver.adhar_card %}
+                                <center><a href="{{ driver.adhar_card.url }}" download><strong>Adhar Card</strong></a></center>
+                            {% else %}
+                            🚫 Adhar Card
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-sm-3 mb-2">
+                        <div class="info-field">
+                            
+                            {% if driver.document1 %}
+                                <center><a href="{{ driver.document1.url }}" download><strong>Document 1</strong></a></center>
+                            {% else %}
+                            🚫 Document 1  
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-sm-3 mb-2">
+                        <div class="info-field">
+                            
+                            {% if driver.document2 %}
+                                <center><a href="{{ driver.document2.url }}" download><strong>Document 2</strong></a></center>
+                            {% else %}
+                            🚫 Document 2 
+                            {% endif %}
+                        </div>
+                    </div>
+                
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-sm-12"> <br><br>
+                <h3 class="text-info"><b>Bill Records</b></h3>
+                <div class="row">
+                    <div class="container" style=" overflow:scroll;">
+                        <table id="bill_table" class="table table-striped table-bordered" style="width:100%; min-width: max-content;">
+                            <thead>
+                                <tr style="background-color: rgb(56, 79, 90);">
+                                    <th scope="col" class="text-center text-white">Sr. No</th>
+                                    <th scope="col" class="text-center text-white">Vehicle Number</th>
+                                    <th scope="col" class="text-center text-white">From Location</th>
+                                    <th scope="col" class="text-center text-white">To Location</th>
+                                    <th scope="col" class="text-center text-white">Commission Amount</th>
+                                    <th scope="col" class="text-center text-white">Commission Received</th>
+                                    <th scope="col" class="text-center text-white">Commission Pending</th>
+                                    <th scope="col" class="text-center text-white">Date</th>
+                                    <th scope="col" class="text-center text-white">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if bill_rec %}
+                                {% for r in bill_rec %}
+                                <tr>
+                                    <td class="text-center">{{ forloop.counter }}</td>
+                                    <td class="text-center">{{ r.vehicle.vehicle_number }} </td>
+                                    <td class="text-center">{{ r.from_location }} </td>
+                                    <td class="text-center">{{ r.to_location }} </td>
+                                    <td class="text-center">{{ r.commission_charge }} </td>
+                                    <td class="text-center">{{ r.commission_received }} </td>
+                                    <td class="text-center">{{ r.commission_pending }} </td>
+                                    <td class="text-center">{{ r.bill_date }} </td>
+                                     
+                                    <td>
+                                        <center>
+                                            <a href="{% url "software_print_bill" r.id %}" class="btn btn-primary px-2"><i class="bi bi-printer"></i></a>
+                                            <a href="javascript:void(0);" data-url="{% url 'software_update_bill' r.id %}" class="btn btn-warning px-2" onclick="mini_window_2(this)"><i class="bi bi-pencil-square"></i></a>
+                                        </center>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="10" class="text-center">No Bills Found</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                        
+                        <!-- Pagination controls -->
+                        <div class="pagination-container">
+                            <div class="pagination">
+                                {% if bill_rec.has_previous %}
+                                    <a href="?page=1&{{ filter_params }}">« First</a>
+                                    <a href="?page={{ bill_rec.previous_page_number }}&{{ filter_params }}">Previous</a>
+                                {% endif %}
+                                
+                                <span class="current-page">Page {{ bill_rec.number }} of {{ bill_rec.paginator.num_pages }}</span>
+                
+                                {% if bill_rec.has_next %}
+                                    <a href="?page={{ bill_rec.next_page_number }}&{{ filter_params }}">Next</a>
+                                    <a href="?page={{ bill_rec.paginator.num_pages }}&{{ filter_params }}">Last »</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                                                    
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+</main><!-- End #main -->
+ 
+<script>
+    
+    
+    function mini_window_2(element) { 
+        const url = element.dataset.url;
+        var screenWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        var screenHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        var newWidth = screenWidth * 0.9;  // 90% of the screen width
+        var newHeight = screenHeight * 0.9;  // 90% of the screen height
+        var left = (screenWidth - newWidth) / 2;
+        var top = (screenHeight - newHeight) / 2;
+        var windowFeatures = `width=${newWidth},height=${newHeight},scrollbars=yes,resizable=yes,top=${top},left=${left}`;
+        var newWindow = window.open(url, "miniWindow", windowFeatures);
+        newWindow.onload = function() {
+            newWindow.location.replace(url);
+        };
+    }
+
+</script>
+
+{% endblock content %}

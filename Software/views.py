@@ -12,32 +12,75 @@ from django.db.models import Count
 from datetime import datetime, timedelta 
 from django.db.models.functions import TruncDate
 
+from django.core.paginator import Paginator
+from .filters import *
+import json
+
 def dashboard(request): 
     today = localdate()  # Get today's date
 
     # Filter today's bills
-    today_bills = Bill.objects.filter(bill_date=today)
+    # today_bills = Bill.objects.filter(bill_date=today)
+    today_bills = Bill.objects.select_related(
+        'business', 'party', 'driver', 'vehicle', 'reference'
+    ).only(
+         'commission_charge', 'commission_received', 'commission_pending' 
+    ).filter(bill_date=today)
 
     # Calculate totals
-    total_bills_generated = today_bills.count()
-    total_commission_amount = today_bills.aggregate(Sum('commission_charge'))['commission_charge__sum'] or 0
+    today_bills_generated = today_bills.count()
+    today_commission_amount = today_bills.aggregate(Sum('commission_charge'))['commission_charge__sum'] or 0
     received_commission = today_bills.aggregate(Sum('commission_received'))['commission_received__sum'] or 0
     pending_commission = today_bills.aggregate(Sum('commission_pending'))['commission_pending__sum'] or 0
 
-    total_owners = VehicleOwner.objects.count()
-    total_vehicles = Vehicle.objects.count()
-    total_parties = Party.objects.count()
-    total_drivers = Driver.objects.count()
- 
+    bills = Bill.objects.select_related(
+        'business', 'party', 'driver', 'vehicle', 'reference'
+    ).only(
+         'commission_charge', 'commission_received', 'commission_pending' 
+    )
+
+    total_bills_generated = bills.count()
+    total_commission_amount = bills.aggregate(Sum('commission_charge'))['commission_charge__sum'] or 0
+    total_received_commission = bills.aggregate(Sum('commission_received'))['commission_received__sum'] or 0
+    total_pending_commission = bills.aggregate(Sum('commission_pending'))['commission_pending__sum'] or 0
+
+    chart_labels=['drivers','parties','owner','vehicle']
+    chart_data=[]
+    count_owners = VehicleOwner.objects.count()
+    count_vehicles = Vehicle.objects.count()
+    count_parties = Party.objects.count()
+    count_drivers = Driver.objects.count()
+    chart_data.append(count_drivers)
+    chart_data.append(count_parties)
+    chart_data.append(count_owners)
+    chart_data.append(count_vehicles)
+
+
+    top_owners_pending_commission = (
+        VehicleOwner.objects.annotate(total_pending=Sum('referenced_bills__commission_pending'))
+        .filter(total_pending__gt=0)
+        .order_by('-total_pending')[:5]
+    )
+
     context = {
-        'total_bills_generated': total_bills_generated,
-        'total_commission_amount': total_commission_amount,
+        'today_bills_generated': today_bills_generated,
+        'today_commission_amount': today_commission_amount,
         'received_commission': received_commission,
         'pending_commission': pending_commission,
-        'total_owners': total_owners,
-        'total_vehicles': total_vehicles,
-        'total_parties': total_parties,
-        'total_drivers': total_drivers,
+        'total_owners': count_owners,
+        'total_vehicles': count_vehicles,
+        'total_parties': count_parties,
+        'total_drivers': count_drivers,
+        
+        'total_commission_amount': total_commission_amount,
+        'total_received_commission': total_received_commission,
+        'total_pending_commission': total_pending_commission,
+        'total_bills_generated':total_bills_generated,
+        'chart_labels': json.dumps(chart_labels),
+        'chart_data': json.dumps(chart_data),
+
+        'top_owners_pending_commission':top_owners_pending_commission,
+
     }
 
     return render(request, 'software_dashboard.html', context)
@@ -46,7 +89,18 @@ def dashboard(request):
 def owner_list(request): 
     form=OwnerForm()
     rec=VehicleOwner.objects.select_related().order_by('-id') 
-    return render(request, 'software_owner_list.html',{'form':form,'rec':rec} )
+        # Pagination
+    paginator = Paginator(rec, 50)  # Show 10 job cards per page.
+    page_number = request.GET.get('page')  # Get the page number from the GET request
+    page_obj = paginator.get_page(page_number)  # Get the corresponding page object
+    
+    # Include the filter parameters in the pagination context
+    filter_params = request.GET.copy()  # Copy the GET parameters
+    if 'page' in filter_params:
+        del filter_params['page']  # Remove the page parameter if it exists
+    
+        
+    return render(request, 'software_owner_list.html',{'form':form,'rec':page_obj,'filter_params': filter_params.urlencode(),} )
 
 def create_owner(request):
     if request.method == 'POST':
@@ -99,12 +153,53 @@ def delete_owner(request, id):
     return redirect('/software/owner_list')
 
 
+def owner_dashboard(request,id): 
+    owner=VehicleOwner.objects.get(id=id)
+    bill=Bill.objects.select_related(  'vehicle').only('vehicle').filter(vehicle__owner=owner)
+    # Calculate totals
+    total_bills_generated = bill.count()
+    total_commission_amount = bill.aggregate(Sum('commission_charge'))['commission_charge__sum'] or 0
+    received_commission = bill.aggregate(Sum('commission_received'))['commission_received__sum'] or 0
+    pending_commission = bill.aggregate(Sum('commission_pending'))['commission_pending__sum'] or 0
+
+    paginator = Paginator(bill, 10)  # Show 10 job cards per page.
+    page_number = request.GET.get('page')  # Get the page number from the GET request
+    page_obj = paginator.get_page(page_number)  # Get the corresponding page object
+    
+    # Include the filter parameters in the pagination context
+    filter_params = request.GET.copy()  # Copy the GET parameters
+    if 'page' in filter_params:
+        del filter_params['page']  # Remove the page parameter if it exists
+    
+    context={
+        'bill_rec':page_obj,
+        'owner':owner,
+        'filter_params': filter_params.urlencode(),
+        'total_bills_generated':total_bills_generated,
+        'total_commission_amount':total_commission_amount,
+        'received_commission':received_commission,
+        'pending_commission':pending_commission,
+        
+        }
+    return render(request, 'software_owner_dashboard.html',context )
+
 
 def vehicle_list(request): 
     form=VehicleForm()
     rec=Vehicle.objects.select_related().order_by('-id')
-    owner=VehicleOwner.objects.all()
-    return render(request, 'software_vehicle_list.html',{'form':form,'rec':rec,'owner':owner} )
+    owner = VehicleOwner.objects.only('id', 'owner_name','owner_mobile_number').order_by('-id')
+
+    paginator = Paginator(rec, 50)  # Show 10 job cards per page.
+    page_number = request.GET.get('page')  # Get the page number from the GET request
+    page_obj = paginator.get_page(page_number)  # Get the corresponding page object
+    
+    # Include the filter parameters in the pagination context
+    filter_params = request.GET.copy()  # Copy the GET parameters
+    if 'page' in filter_params:
+        del filter_params['page']  # Remove the page parameter if it exists
+    
+        
+    return render(request, 'software_vehicle_list.html',{'form':form,'rec':page_obj,'owner':owner,'filter_params': filter_params.urlencode()} )
 
 import re
 def create_vehicle(request):
@@ -165,11 +260,52 @@ def delete_vehicle(request, id):
     return redirect('/software/vehicle_list')
 
 
+def vehicle_dashboard(request,id): 
+    vehicle=Vehicle.objects.get(id=id)
+    bill=Bill.objects.select_related('vehicle').only('vehicle').filter(vehicle=vehicle)
+    # Calculate totals
+    total_bills_generated = bill.count()
+    total_commission_amount = bill.aggregate(Sum('commission_charge'))['commission_charge__sum'] or 0
+    received_commission = bill.aggregate(Sum('commission_received'))['commission_received__sum'] or 0
+    pending_commission = bill.aggregate(Sum('commission_pending'))['commission_pending__sum'] or 0
+
+    paginator = Paginator(bill, 10)  # Show 10 job cards per page.
+    page_number = request.GET.get('page')  # Get the page number from the GET request
+    page_obj = paginator.get_page(page_number)  # Get the corresponding page object
+    
+    # Include the filter parameters in the pagination context
+    filter_params = request.GET.copy()  # Copy the GET parameters
+    if 'page' in filter_params:
+        del filter_params['page']  # Remove the page parameter if it exists
+    
+    context={
+        'bill_rec':page_obj,
+        'vehicle':vehicle,
+        'filter_params': filter_params.urlencode(),
+        'total_bills_generated':total_bills_generated,
+        'total_commission_amount':total_commission_amount,
+        'received_commission':received_commission,
+        'pending_commission':pending_commission,
+        
+        }
+    return render(request, 'software_vehicle_dashboard.html',context )
+
+
 
 def party_list(request): 
     form=PartyForm()
-    rec=Party.objects.select_related().order_by('-id')
-    return render(request, 'software_party_list.html',{'form':form,'rec':rec} )
+    rec=Party.objects.select_related('business').order_by('-id')
+
+    paginator = Paginator(rec, 50)  # Show 10 job cards per page.
+    page_number = request.GET.get('page')  # Get the page number from the GET request
+    page_obj = paginator.get_page(page_number)  # Get the corresponding page object
+    
+    # Include the filter parameters in the pagination context
+    filter_params = request.GET.copy()  # Copy the GET parameters
+    if 'page' in filter_params:
+        del filter_params['page']  # Remove the page parameter if it exists
+    
+    return render(request, 'software_party_list.html',{'form':form,'rec':page_obj,'filter_params': filter_params.urlencode()} )
 
 def create_party(request):
     if request.method == 'POST':
@@ -224,11 +360,52 @@ def delete_party(request, id):
 
 
 
+def party_dashboard(request,id): 
+    party=Party.objects.get(id=id)
+    bill=Bill.objects.select_related('vehicle').only('vehicle').filter(party=party)
+    # Calculate totals
+    total_bills_generated = bill.count()
+    total_commission_amount = bill.aggregate(Sum('commission_charge'))['commission_charge__sum'] or 0
+    received_commission = bill.aggregate(Sum('commission_received'))['commission_received__sum'] or 0
+    pending_commission = bill.aggregate(Sum('commission_pending'))['commission_pending__sum'] or 0
+
+    paginator = Paginator(bill, 10)  # Show 10 job cards per page.
+    page_number = request.GET.get('page')  # Get the page number from the GET request
+    page_obj = paginator.get_page(page_number)  # Get the corresponding page object
+    
+    # Include the filter parameters in the pagination context
+    filter_params = request.GET.copy()  # Copy the GET parameters
+    if 'page' in filter_params:
+        del filter_params['page']  # Remove the page parameter if it exists
+    
+    context={
+        'bill_rec':page_obj,
+        'party':party,
+        'filter_params': filter_params.urlencode(),
+        'total_bills_generated':total_bills_generated,
+        'total_commission_amount':total_commission_amount,
+        'received_commission':received_commission,
+        'pending_commission':pending_commission,
+        
+        }
+    return render(request, 'software_party_dashboard.html',context )
+
+
 
 def driver_list(request): 
     form=DriverForm()
     rec=Driver.objects.select_related().order_by('-id')
-    return render(request, 'software_driver_list.html',{'form':form,'rec':rec} )
+
+    paginator = Paginator(rec, 20)  # Show 10 job cards per page.
+    page_number = request.GET.get('page')  # Get the page number from the GET request
+    page_obj = paginator.get_page(page_number)  # Get the corresponding page object
+    
+    # Include the filter parameters in the pagination context
+    filter_params = request.GET.copy()  # Copy the GET parameters
+    if 'page' in filter_params:
+        del filter_params['page']  # Remove the page parameter if it exists
+    
+    return render(request, 'software_driver_list.html',{'form':form,'rec':page_obj,'filter_params': filter_params.urlencode()} )
 
 def create_driver(request):
     if request.method == 'POST':
@@ -279,14 +456,43 @@ def delete_driver(request, id):
     return redirect('/software/driver_list')
 
 
-from django.core.paginator import Paginator
-from .filters import *
+
+
+def driver_dashboard(request,id): 
+    driver=Driver.objects.get(id=id)
+    bill=Bill.objects.select_related('vehicle').only('vehicle').filter(driver=driver)
+    # Calculate totals
+    total_bills_generated = bill.count()
+    total_commission_amount = bill.aggregate(Sum('commission_charge'))['commission_charge__sum'] or 0
+    received_commission = bill.aggregate(Sum('commission_received'))['commission_received__sum'] or 0
+    pending_commission = bill.aggregate(Sum('commission_pending'))['commission_pending__sum'] or 0
+
+    paginator = Paginator(bill, 10)  # Show 10 job cards per page.
+    page_number = request.GET.get('page')  # Get the page number from the GET request
+    page_obj = paginator.get_page(page_number)  # Get the corresponding page object
+    
+    # Include the filter parameters in the pagination context
+    filter_params = request.GET.copy()  # Copy the GET parameters
+    if 'page' in filter_params:
+        del filter_params['page']  # Remove the page parameter if it exists
+    
+    context={
+        'bill_rec':page_obj,
+        'driver':driver,
+        'filter_params': filter_params.urlencode(),
+        'total_bills_generated':total_bills_generated,
+        'total_commission_amount':total_commission_amount,
+        'received_commission':received_commission,
+        'pending_commission':pending_commission,
+        
+        }
+    return render(request, 'software_driver_dashboard.html',context )
+
+
 
 def bill_list(request):
     # Create the form instance
-
     bill_form = BillForm(initial={'bill_date':date.today()})
-
     # Optimize Bill Query
     bill_rec = Bill.objects.only(
         'id', 'from_location', 'to_location', 'rent_amount', 'pending_amount'
@@ -295,7 +501,7 @@ def bill_list(request):
     vehicle_rec = Vehicle.objects.only('id', 'vehicle_number').order_by('-id')
     party_rec = Party.objects.only('id', 'name', 'mobile').order_by('-id')
     driver_rec = Driver.objects.only('id', 'driver_name', 'mobile').order_by('-id')
-
+ 
     filter = BillFilter(request.GET, queryset=bill_rec)
     filtered_rec = filter.qs  # Filtered queryset
     # Pagination
