@@ -49,11 +49,22 @@ class BillFilter(django_filters.FilterSet):
         empty_label="---------",  # Default empty label
         label='Vehicle Owner'
     )    
+    
     def __init__(self, *args, **kwargs):
         super(BillFilter, self).__init__(*args, **kwargs)
         self.filters['start_date'].label = "Start Date"
         self.filters['end_date'].label = "End Date"
+    from_location = django_filters.CharFilter(
+        field_name='from_location',
+        lookup_expr='icontains',
+        label='From Location'
+    )
 
+    to_location = django_filters.CharFilter(
+        field_name='to_location',
+        lookup_expr='icontains',
+        label='To Location'
+    )
     class Meta:
         model = Bill
         fields = ['commission_pending',  'from_location', 'to_location', 'reference', 'vehicle', 'driver', 'party', 'bill_number', 'vehicle__owner']
